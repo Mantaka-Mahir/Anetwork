@@ -1,4 +1,5 @@
 import 'package:event_management_app/screeen/about_screen.dart';
+import 'package:event_management_app/screeen/admin_screen.dart';
 import 'package:event_management_app/screeen/contact_screen.dart';
 import 'package:event_management_app/screeen/events_screen.dart';
 import 'package:event_management_app/screeen/food_screen.dart';
@@ -9,6 +10,7 @@ import 'package:event_management_app/screeen/merch_screen.dart';
 import 'package:event_management_app/screeen/privacy_policy_screen.dart';
 import 'package:event_management_app/screeen/signup.dart';
 import 'package:event_management_app/screeen/support_screen.dart';
+import 'package:event_management_app/widget/sccaner.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -150,6 +152,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             const Divider(),
             _buildDrawerItem(Icons.login, 'Log In', LoginScreen()),
             _buildDrawerItem(Icons.person_add, 'Sign Up', SignUpScreen()),
+            _buildDrawerItem(Icons.admin_panel_settings, 'Admin', AdminScreen()),
           ],
         ),
       ),
@@ -158,7 +161,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Widget _buildDrawerItem(IconData icon, String title, Widget screen) {
     return ListTile(
-      leading: Icon(icon, color: isDarkMode ? Colors.white70 : Colors.black87),
+      leading: Icon(
+        icon,
+        color: isDarkMode ? Colors.white70 : Colors.black87,
+      ),
       title: Text(
         title,
         style: TextStyle(
@@ -203,17 +209,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         ],
       ),
       actions: [
-        // NEW: Scanner Button added in the AppBar actions
+        // Scanner button added
         IconButton(
           icon: Icon(Icons.qr_code_scanner, color: isDarkMode ? Colors.white : Colors.black),
           onPressed: () {
             // Replace with your scanning functionality
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>ScanQrCode()));
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Scanner pressed")),
             );
           },
         ),
-        // Show additional nav buttons on larger screens
+        // Dark mode toggle added beside the scanner button
+        _buildDarkModeToggle(),
+        // Additional nav buttons for larger screens
         if (MediaQuery.of(context).size.width > 600) ...[
           _buildNavButton('Home', const EventApp()),
           _buildNavButton('Events', EventsScreen()),
@@ -254,6 +263,24 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
         child: Text(text),
+      ),
+    );
+  }
+
+  // Dark mode toggle widget, now placed beside the scanner button in the AppBar.
+  Widget _buildDarkModeToggle() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isDarkMode = !isDarkMode;
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Icon(
+          isDarkMode ? Icons.dark_mode : Icons.light_mode,
+          color: isDarkMode ? Colors.white : Colors.black,
+        ),
       ),
     );
   }
@@ -421,7 +448,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   _buildSocialIcon(FontAwesomeIcons.instagram, _instagramUrl),
                 ],
               ),
-              _buildDarkModeToggle(),
+              _buildDarkModeToggle(), // Also in footer if needed
             ],
           ),
         ],
@@ -446,42 +473,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       icon: Icon(icon),
       onPressed: () => _launchUrl(url),
       color: isDarkMode ? Colors.white70 : Colors.black54,
-    );
-  }
-
-  Widget _buildDarkModeToggle() {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          isDarkMode = !isDarkMode;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          color: isDarkMode ? Colors.blue : Colors.grey[300],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isDarkMode ? Icons.dark_mode : Icons.light_mode,
-              color: isDarkMode ? Colors.white : Colors.black54,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              isDarkMode ? 'Dark' : 'Light',
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black54,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
