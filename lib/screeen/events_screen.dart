@@ -45,23 +45,12 @@ class _EventsScreenState extends State<EventsScreen> {
       'time': 'THU, 6:00 PM - 9:00 PM',
       'image': 'https://images.unsplash.com/photo-1553481187-be93c21490a9',
     },
-    {
-      'title': 'Summer Soirée 2024',
-      'date': '05 JUN',
-      'time': 'FRI, 7:00 PM - 11:00 PM',
-      'image': 'https://images.unsplash.com/photo-1556741533-f6acd647d2fb',
-    },
-    {
-      'title': 'Art & Music Festival',
-      'date': '15 JUL',
-      'time': 'SAT, 4:00 PM - 10:00 PM',
-      'image': 'https://images.unsplash.com/photo-1531266755785-cc8d48c7a468',
-    },
+
     {
       'title': 'Tech Talk: Future of AI',
       'date': '22 AUG',
       'time': 'WED, 5:00 PM - 7:00 PM',
-      'image': 'https://images.unsplash.com/photo-1581091012184-8e46c2a40331',
+      'image': 'https://images.unsplash.com/photo-1556740749-887f6717d7e4',
     },
     {
       'title': 'Networking Brunch',
