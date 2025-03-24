@@ -1,3 +1,4 @@
+import 'package:event_management_app/widget/eventdetail.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -293,7 +294,7 @@ class EventCard extends StatelessWidget {
           color: Colors.white,
           child: InkWell(
             onTap: () {
-              // Navigate to event details if needed
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>EventDetail(event: event)));// Navigate to event details if needed
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
