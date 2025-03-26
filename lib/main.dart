@@ -2,8 +2,7 @@ import 'package:event_management_app/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:event_management_app/homescreen.dart';
- // Import your CartProvider file
+import 'package:event_management_app/homescreen.dart'; // Import your CartProvider file
 
 void main() {
   runApp(
@@ -54,6 +53,14 @@ class _AnimatedScreenState extends State<AnimatedScreen> with SingleTickerProvid
     );
 
     _controller.forward();
+
+    // Auto-navigate after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const EventApp()),
+      );
+    });
   }
 
   @override
@@ -102,7 +109,7 @@ class _AnimatedScreenState extends State<AnimatedScreen> with SingleTickerProvid
               scale: _scaleAnimation,
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const EventApp()),
                   );
@@ -111,25 +118,8 @@ class _AnimatedScreenState extends State<AnimatedScreen> with SingleTickerProvid
                   duration: const Duration(milliseconds: 500),
                   curve: Curves.easeInOut,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.blueAccent,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blueAccent.withOpacity(0.5),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    'Get Started',
-                    style: GoogleFonts.lato(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+
+
                 ),
               ),
             ),
