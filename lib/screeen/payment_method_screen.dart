@@ -2,7 +2,6 @@ import 'package:event_management_app/screeen/confarmation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class PaymentMethodScreen extends StatefulWidget {
   final Map<String, dynamic> event;
   final int ticketsBought;
@@ -38,13 +37,20 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   }
 
   void _confirmPayment() {
-    Navigator.pop(context, widget.ticketsBought);
+    double ticketPrice = widget.event['price'] ?? 0;
+    double totalPrice = widget.ticketsBought * ticketPrice;
+
+    if (couponApplied) {
+      totalPrice *= 0.9; // Apply 10% discount
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TicketConfirmationScreen(
           event: widget.event,
           ticketsBought: widget.ticketsBought,
+          totalPrice: totalPrice,
           couponApplied: couponApplied,
         ),
       ),
@@ -63,7 +69,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         decoration: BoxDecoration(
           color: selectedPaymentMethod == name ? Colors.redAccent : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 5,
@@ -96,8 +102,13 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+    double ticketPrice = widget.event['ticketPrice'] ?? 0;
+    double totalPrice = widget.ticketsBought * ticketPrice;
+
+    // Apply coupon discount if any
+    if (couponApplied) {
+      totalPrice *= 0.9; // 10% discount
+    }
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -107,11 +118,54 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         backgroundColor: Colors.red,
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 20),
+
+              // Event Details
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.event['title'] ?? "Event Name",
+                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Tickets: ${widget.ticketsBought}",
+                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Total Price:",
+                          style: GoogleFonts.poppins(fontSize: 16, color: Colors.black),  // Change this to Colors.black
+                        ),
+                        Text(
+                          "৳ ${totalPrice.toStringAsFixed(2)}",
+                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),  // Change this to Colors.black
+                        ),
+                      ],
+                    )
+
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 20),
               Text(
                 "Select Payment Method",
@@ -119,14 +173,13 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               ),
               const SizedBox(height: 10),
 
-              /// **Payment Methods using Network Images**
+              /// Payment Methods
               _buildPaymentCard("Credit Card", "https://cdn-icons-png.flaticon.com/512/217/217841.png"),
               _buildPaymentCard("PayPal", "https://cdn-icons-png.flaticon.com/512/888/888870.png"),
 
-
               const SizedBox(height: 20),
 
-              /// **Coupon Section**
+              /// Coupon Section
               Text(
                 "Enter Coupon Code",
                 style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
@@ -159,13 +212,13 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
               const SizedBox(height: 30),
 
-              /// **Confirm Payment Button**
+              /// Confirm Payment Button
               Center(
                 child: ElevatedButton(
                   onPressed: _confirmPayment,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
@@ -179,9 +232,6 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           ),
         ),
       ),
-
-      /// **Floating Action Button for Adding a New Card**
-
     );
   }
 }

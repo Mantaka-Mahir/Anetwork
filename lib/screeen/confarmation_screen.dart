@@ -5,12 +5,14 @@ class TicketConfirmationScreen extends StatelessWidget {
   final Map<String, dynamic> event;
   final int ticketsBought;
   final bool couponApplied;
+  final double totalPrice;
 
   const TicketConfirmationScreen({
     Key? key,
     required this.event,
     required this.ticketsBought,
     this.couponApplied = false,
+    required this.totalPrice,
   }) : super(key: key);
 
   @override
@@ -30,12 +32,19 @@ class TicketConfirmationScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 "Ticket Purchased Successfully!",
-                style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                    fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
               Text(
                 "You bought $ticketsBought ticket(s) for the event: ${event['title']} $couponText",
+                style: GoogleFonts.poppins(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Total amount: \$${totalPrice.toStringAsFixed(2)}",
                 style: GoogleFonts.poppins(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
