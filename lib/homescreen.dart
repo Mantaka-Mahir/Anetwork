@@ -1,5 +1,6 @@
 import 'package:event_management_app/screeen/about_screen.dart';
-import 'package:event_management_app/screeen/admin_screen.dart';
+import 'package:event_management_app/screeen/adminloginscreen.dart';
+
 import 'package:event_management_app/screeen/contact_screen.dart';
 import 'package:event_management_app/screeen/events_screen.dart';
 import 'package:event_management_app/screeen/food_screen.dart';
@@ -152,7 +153,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             const Divider(),
             _buildDrawerItem(Icons.login, 'Log In', LoginScreen()),
             _buildDrawerItem(Icons.person_add, 'Sign Up', SignUpScreen()),
-            _buildDrawerItem(Icons.admin_panel_settings, 'Admin', AdminScreen()),
+            _buildDrawerItem(Icons.admin_panel_settings, 'Admin', AdminLoginScreen()),
           ],
         ),
       ),
