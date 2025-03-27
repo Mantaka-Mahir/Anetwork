@@ -1,6 +1,7 @@
+import 'package:event_management_app/screeen/adduser.dart';
+import 'package:event_management_app/screeen/edit_event_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'edit_event_screen.dart';
 
 class EditCurrentEventScreen extends StatelessWidget {
   const EditCurrentEventScreen({Key? key}) : super(key: key);
@@ -21,7 +22,7 @@ class EditCurrentEventScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const EditEventScreen(),
+                  builder: (context) => const AddEventScreen(),
                 ),
               );
             },
@@ -35,12 +36,35 @@ class EditCurrentEventScreen extends StatelessWidget {
           children: [
             _buildEventHeader(),
             const SizedBox(height: 24),
-            Text(
-              'Booked Users',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+            // NEW: Row with "Booked Users" header and "Add User" button at top right
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Booked Users',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Navigate to your "Add User" screen (to be implemented)
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>AddUserScreen()));
+                  },
+                  icon: const Icon(Icons.add),
+                  label: Text(
+                    'Add User',
+                    style: GoogleFonts.poppins(),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white54, // Button background color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             _buildUsersList(),
