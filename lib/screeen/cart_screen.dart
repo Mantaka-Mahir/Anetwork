@@ -1,7 +1,6 @@
 import 'package:event_management_app/widget/cart_item_tile.dart';
 import 'package:flutter/material.dart';
 import '../providers/cart_provider.dart';
-
 import 'order_confirmation_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -11,14 +10,19 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.red, // Red background as requested
       appBar: AppBar(
         title: const Text('Your Cart'),
+        backgroundColor: Colors.black, // Dark theme for app bar
       ),
       body: Consumer<CartProvider>(
         builder: (context, cart, child) {
           if (cart.items.isEmpty) {
             return const Center(
-              child: Text('Your cart is empty'),
+              child: Text(
+                'Your cart is empty',
+                style: TextStyle(color: Colors.white), // White text for readability
+              ),
             );
           }
 
@@ -35,10 +39,11 @@ class CartScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.black, // Dark container for contrast
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.black.withOpacity(0.3),
                       spreadRadius: 1,
                       blurRadius: 10,
                     ),
@@ -54,6 +59,7 @@ class CartScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                         Text(
@@ -61,7 +67,7 @@ class CartScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.brown,
+                            color: Colors.redAccent,
                           ),
                         ),
                       ],
@@ -70,6 +76,12 @@ class CartScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                         onPressed: () {
                           cart.clear();
                           Navigator.of(context).pushReplacement(
@@ -78,7 +90,10 @@ class CartScreen extends StatelessWidget {
                             ),
                           );
                         },
-                        child: const Text('Checkout'),
+                        child: const Text(
+                          'Checkout',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],

@@ -10,7 +10,9 @@ class FoodScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.redAccent,
       appBar: AppBar(
+
         title: const Text('Food Menu'),
         actions: const [CartBadge()],
       ),

@@ -1,17 +1,15 @@
 import 'package:event_management_app/screeen/about_screen.dart';
 import 'package:event_management_app/screeen/adminloginscreen.dart';
-
 import 'package:event_management_app/screeen/contact_screen.dart';
 import 'package:event_management_app/screeen/events_screen.dart';
 import 'package:event_management_app/screeen/food_screen.dart';
 import 'package:event_management_app/screeen/log%20in.dart';
-
 import 'package:event_management_app/screeen/membership_screen.dart';
 import 'package:event_management_app/screeen/merch_screen.dart';
 import 'package:event_management_app/screeen/privacy_policy_screen.dart';
 import 'package:event_management_app/screeen/signup.dart';
 import 'package:event_management_app/screeen/support_screen.dart';
-import 'package:event_management_app/widget/sccaner.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -96,19 +94,29 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
-  // Method to navigate to different screens
+  // Method to navigate to different screens using a fade transition.
   void _navigateToScreen(BuildContext context, Widget screen) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => screen),
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (_, __, ___) => screen,
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Set a vibrant red background as requested.
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+      backgroundColor: Colors.red,
       appBar: _buildAppBar(context),
       drawer: _buildDrawer(context),
       body: SingleChildScrollView(
@@ -211,19 +219,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
       actions: [
         // Scanner button added
-        IconButton(
-          icon: Icon(Icons.qr_code_scanner, color: isDarkMode ? Colors.white : Colors.black),
-          onPressed: () {
-            // Replace with your scanning functionality
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>ScanQrCode()));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Scanner pressed")),
-            );
-          },
-        ),
-        // Dark mode toggle added beside the scanner button
+
         _buildDarkModeToggle(),
-        // Additional nav buttons for larger screens
         if (MediaQuery.of(context).size.width > 600) ...[
           _buildNavButton('Home', const EventApp()),
           _buildNavButton('Events', EventsScreen()),
@@ -268,7 +265,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  // Dark mode toggle widget, now placed beside the scanner button in the AppBar.
   Widget _buildDarkModeToggle() {
     return GestureDetector(
       onTap: () {
@@ -379,8 +375,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: Container(
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[850] : Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -400,24 +396,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, size: 48, color: Colors.white),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                Row(
+                  children: [
+                    Icon(icon, size: 24, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   description,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                  ),
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(color: Colors.white70),
                 ),
               ],
             ),
@@ -449,7 +447,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   _buildSocialIcon(FontAwesomeIcons.instagram, _instagramUrl),
                 ],
               ),
-              _buildDarkModeToggle(), // Also in footer if needed
+              _buildDarkModeToggle(),
             ],
           ),
         ],

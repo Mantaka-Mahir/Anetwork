@@ -92,14 +92,7 @@ class _AnimatedScreenState extends State<AnimatedScreen> with SingleTickerProvid
               opacity: _fadeAnimation,
               child: SlideTransition(
                 position: _slideAnimation,
-                child: Text(
-                  'Welcome to Attention Network',
-                  style: GoogleFonts.lato(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red, // Red color text
-                  ),
-                ),
+
               ),
             ),
             const SizedBox(height: 30),

@@ -32,7 +32,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     });
   }
 
-  /// Neumorphic Card Builder using ClayContainer
+  /// Updated Navigation Card Builder with Hero and fade transition.
   Widget _buildAnimatedNavigationCard(
       BuildContext context,
       String title,
@@ -40,47 +40,57 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       Color color,
       String backgroundImageUrl,
       VoidCallback onTap,
-      int index) {
+      int index,
+      ) {
     return AnimatedOpacity(
       opacity: opacityLevel,
       duration: Duration(milliseconds: 500 + index * 100),
       child: GestureDetector(
         onTap: onTap,
-        child: ClayContainer(
-          borderRadius: 20,
-          depth: 40,
-          spread: 2,
-          color: isDarkMode ? Colors.grey[850] : Colors.grey[200],
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: DecorationImage(
-                image: CachedNetworkImageProvider(backgroundImageUrl),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.4),
-                  BlendMode.darken,
-                ),
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 40,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+        child: Hero(
+          tag: title,
+          child: ClayContainer(
+            borderRadius: 20,
+            depth: 40,
+            spread: 2,
+            color: isDarkMode ? Colors.grey[850] : Colors.grey[200],
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: DecorationImage(
+                  image: CachedNetworkImageProvider(backgroundImageUrl),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.4),
+                    BlendMode.darken,
                   ),
                 ),
-              ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(icon, size: 40, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // You can add additional details (e.g., time range, price) here if needed.
+                ],
+              ),
             ),
           ),
         ),
@@ -90,24 +100,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Vibrant red background for bold visual impact.
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      // Use Material AppBar with custom styling instead of NeumorphicAppBar.
+      backgroundColor: Colors.red,
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+        backgroundColor: Colors.black,
         elevation: 0,
         title: Row(
           children: [
             Center(child: Image.asset('assets/logo.png', height: 25)),
             const SizedBox(width: 16),
-            Center(
-              child: Text(
-                'Attention Network',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+            Text(
+              'Attention Network',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
             ),
           ],
@@ -117,7 +125,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             onPressed: _toggleDarkMode,
             icon: Icon(
               isDarkMode ? Icons.dark_mode : Icons.light_mode,
-              color: isDarkMode ? Colors.white : Colors.black,
+              color: Colors.white,
             ),
           ),
         ],
@@ -131,7 +139,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 40),
@@ -144,18 +152,28 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
                   children: [
+                    // Updated "Events" card with fade transition navigation.
                     _buildAnimatedNavigationCard(
                       context,
                       'Events',
                       Icons.event,
                       Colors.blue,
-                      'https://tinyurl.com/5atfvs5y', // Image URL
-                          () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AdminEventScreen(),
-                        ),
-                      ),
+                      'https://tinyurl.com/5atfvs5y',
+                          () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            transitionDuration: const Duration(milliseconds: 500),
+                            pageBuilder: (_, __, ___) => const AdminEventScreen(),
+                            transitionsBuilder: (_, animation, __, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
+                      },
                       0,
                     ),
                     _buildAnimatedNavigationCard(

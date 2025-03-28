@@ -19,6 +19,7 @@ class TicketConfirmationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     String couponText = couponApplied ? "with discount applied" : "";
     return Scaffold(
+      backgroundColor: Colors.redAccent,
       appBar: AppBar(
         title: const Text("Ticket Confirmation"),
       ),

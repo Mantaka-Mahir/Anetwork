@@ -46,34 +46,36 @@ class MerchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Theme(
       data: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Color(0xFF121212),
+        // Use a red background to match your membership screen.
+        scaffoldBackgroundColor: Colors.red,
         primaryColor: Colors.purple,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: Colors.purple,
           secondary: Colors.purpleAccent,
+        ),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 2),
+          bodyMedium: TextStyle(fontSize: 16),
         ),
       ),
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
           title: Text(
             'MERCH STORE',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           elevation: 0,
           actions: [
             IconButton(
-              icon: Icon(Icons.shopping_cart),
+              icon: const Icon(Icons.shopping_cart),
               onPressed: () => _navigateToCart(context),
             ),
           ],
         ),
         body: GridView.builder(
-          padding: EdgeInsets.all(16),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             childAspectRatio: 0.75,
             crossAxisSpacing: 16,
@@ -93,83 +95,105 @@ class MerchScreen extends StatelessWidget {
       tag: 'product-${product.id}',
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _navigateToProductDetails(context, product),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Color(0xFF1E1E1E),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
+        child: _AnimatedScale(
+          child: InkWell(
+            onTap: () => _navigateToProductDetails(context, product),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E1E),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 4),
-                      Row(
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      child: Stack(
                         children: [
-                          if (product.discountPrice != null) ...[
-                            Text(
-                              '\$${product.price.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                decoration: TextDecoration.lineThrough,
-                                color: Colors.grey,
+                          // FadeInImage for error handling and placeholder support.
+                          FadeInImage.assetNetwork(
+                            placeholder: 'assets/placeholder.png',
+                            image: product.imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                          // Gradient overlay for text readability.
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.8),
+                                ],
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Text(
-                              '\$${product.discountPrice!.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.purpleAccent,
-                              ),
-                            ),
-                          ] else
-                            Text(
-                              '\$${product.price.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            if (product.discountPrice != null) ...[
+                              Text(
+                                '\$${product.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  decoration: TextDecoration.lineThrough,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '\$${product.discountPrice!.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purpleAccent,
+                                ),
+                              ),
+                            ] else
+                              Text(
+                                '\$${product.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -206,16 +230,20 @@ class ProductDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Preserve a dark style with gradient overlays.
+      backgroundColor: Colors.black,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 400,
             pinned: true,
+            backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
               background: Hero(
                 tag: 'product-${product.id}',
-                child: Image.network(
-                  product.imageUrl,
+                child: FadeInImage.assetNetwork(
+                  placeholder: 'assets/placeholder.png',
+                  image: product.imageUrl,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -223,33 +251,33 @@ class ProductDetailsScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     product.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       if (product.discountPrice != null) ...[
                         Text(
                           '\$${product.price.toStringAsFixed(2)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             decoration: TextDecoration.lineThrough,
                             color: Colors.grey,
                           ),
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Text(
                           '\$${product.discountPrice!.toStringAsFixed(2)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.purpleAccent,
@@ -258,14 +286,14 @@ class ProductDetailsScreen extends StatelessWidget {
                       ] else
                         Text(
                           '\$${product.price.toStringAsFixed(2)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     product.description,
                     style: TextStyle(
@@ -273,12 +301,12 @@ class ProductDetailsScreen extends StatelessWidget {
                       color: Colors.grey[300],
                     ),
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
                       // Add to cart logic
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Added to cart'),
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -286,8 +314,8 @@ class ProductDetailsScreen extends StatelessWidget {
                     },
                     child: Container(
                       width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: const Center(
                         child: Text(
                           'ADD TO CART',
                           style: TextStyle(
@@ -319,15 +347,16 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Shopping Cart'),
+        title: const Text('Shopping Cart'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView(
-              padding: EdgeInsets.all(16),
-              children: [
+              padding: const EdgeInsets.all(16),
+              children: const [
                 // Add cart items here
                 Text(
                   'Your cart is empty',
@@ -338,8 +367,8 @@ class CartScreen extends StatelessWidget {
             ),
           ),
           Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
               color: Color(0xFF1E1E1E),
               boxShadow: [
                 BoxShadow(
@@ -353,7 +382,7 @@ class CartScreen extends StatelessWidget {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+                  children: const [
                     Text(
                       'Total:',
                       style: TextStyle(
@@ -371,15 +400,15 @@ class CartScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
                     // Checkout logic
                   },
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: const Center(
                       child: Text(
                         'CHECKOUT',
                         style: TextStyle(
@@ -400,6 +429,60 @@ class CartScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A helper widget that adds a subtle scale animation on tap.
+class _AnimatedScale extends StatefulWidget {
+  final Widget child;
+  const _AnimatedScale({Key? key, required this.child}) : super(key: key);
+
+  @override
+  __AnimatedScaleState createState() => __AnimatedScaleState();
+}
+
+class __AnimatedScaleState extends State<_AnimatedScale>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+      lowerBound: 0.95,
+      upperBound: 1.0,
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _controller.reverse();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _controller.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: () => _controller.forward(),
+      child: ScaleTransition(
+        scale: _animation,
+        child: widget.child,
       ),
     );
   }

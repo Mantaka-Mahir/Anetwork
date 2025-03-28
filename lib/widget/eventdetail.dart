@@ -16,7 +16,7 @@ class _EventDetailState extends State<EventDetail> {
   late int totalTickets;
   late int availableTickets;
   int selectedTickets = 1;
-  double ticketPrice = 100; // Price per ticket
+  double ticketPrice = 100;
 
   @override
   void initState() {
@@ -84,26 +84,38 @@ class _EventDetailState extends State<EventDetail> {
     double totalPrice = ticketPrice * selectedTickets;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.red,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Hero animation for the event image with gradient overlay
             Stack(
               children: [
-                Container(
-                  height: 300,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(image),
-                      fit: BoxFit.cover,
+                Hero(
+                  tag: title,
+                  child: Container(
+                    height: 300,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                      image: DecorationImage(
+                        image: NetworkImage(image),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
                 Container(
                   height: 300,
                   decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -114,26 +126,35 @@ class _EventDetailState extends State<EventDetail> {
                     ),
                   ),
                 ),
+                // Back Button
                 Positioned(
                   top: 40,
                   left: 20,
                   child: IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
                     onPressed: () {
                       Navigator.pop(context);
                     },
                   ),
                 ),
+                // Title with icon representing plan type
                 Positioned(
                   bottom: 20,
                   left: 20,
-                  child: Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  child: Row(
+                    children: [
+                      // Sample icon; replace with an icon matching the plan type if needed.
+                      const Icon(Icons.event, color: Colors.white, size: 28),
+                      const SizedBox(width: 8),
+                      Text(
+                        title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -145,7 +166,7 @@ class _EventDetailState extends State<EventDetail> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.calendar_today, size: 18, color: Colors.white),
+                      const Icon(Icons.calendar_today, size: 18, color: Colors.white),
                       const SizedBox(width: 8),
                       Text(
                         '$date | $time',
@@ -157,7 +178,7 @@ class _EventDetailState extends State<EventDetail> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on, size: 20, color: Colors.redAccent),
+                      const Icon(Icons.location_on, size: 20, color: Colors.redAccent),
                       const SizedBox(width: 8),
                       Text(
                         location,
@@ -174,6 +195,7 @@ class _EventDetailState extends State<EventDetail> {
                     style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
+                  // Event Ticket Details Card
                   ClayContainer(
                     depth: 20,
                     borderRadius: 12,
@@ -262,28 +284,32 @@ class _EventDetailState extends State<EventDetail> {
                     ),
                   ),
                   const SizedBox(height: 30),
+                  // Tappable Book Ticket button with Hero animation for smooth transition
                   Center(
                     child: InkWell(
                       onTap: _buyTicket,
                       borderRadius: BorderRadius.circular(12),
-                      child: ClayContainer(
-                        depth: 10,
-                        borderRadius: 12,
-                        color: const Color(0xFF100720),
-                        child: Container(
-                          width: 165,
-                          height: 62,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: const Color(0xFF800080),
-                          ),
-                          child: Text(
-                            "Book Ticket",
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      child: Hero(
+                        tag: "bookTicketButton$title",
+                        child: ClayContainer(
+                          depth: 10,
+                          borderRadius: 12,
+                          color: const Color(0xFF100720),
+                          child: Container(
+                            width: 165,
+                            height: 62,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color: const Color(0xFF800080),
+                            ),
+                            child: Text(
+                              "Book Ticket",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
