@@ -28,22 +28,21 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Modern AppBar with centered title and a deep purple background
+      backgroundColor: Colors.red,
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.redAccent,
         title: Text(
           'Event Management',
-          style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         centerTitle: true,
       ),
-      // Wrap the content in AnimatedOpacity for a subtle fade-in effect
       body: AnimatedOpacity(
         opacity: _opacity,
         duration: const Duration(milliseconds: 500),
         child: Padding(
           padding: const EdgeInsets.all(20),
-          // Use a Column with Expanded widgets so that each card fills available space
           child: Column(
             children: [
               Expanded(
@@ -82,7 +81,6 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
     );
   }
 
-  // Updated: Each navigation card now fills its Expanded area.
   Widget _buildSimpleCard(
       BuildContext context,
       String title,
@@ -95,18 +93,14 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
       child: ClayContainer(
         depth: 20,
         borderRadius: 20,
-        color: Colors.white,
+        color: Colors.white54,
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [color.withOpacity(0.7), color],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.white54,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.3),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -117,14 +111,14 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 40, color: Colors.white),
+                Icon(icon, size: 40, color: Colors.black),
                 const SizedBox(width: 15),
                 Text(
                   title,
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],

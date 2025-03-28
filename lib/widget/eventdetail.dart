@@ -17,6 +17,8 @@ class _EventDetailState extends State<EventDetail> {
   late int availableTickets;
   int selectedTickets = 1;
   double ticketPrice = 100;
+  final TextEditingController _couponController = TextEditingController();
+  String couponMessage = '';
 
   @override
   void initState() {
@@ -68,12 +70,24 @@ class _EventDetailState extends State<EventDetail> {
     }
   }
 
+  void _applyCoupon() {
+    // Implement your coupon logic here.
+    setState(() {
+      // This is a simple example. You can modify it based on your discount logic.
+      if (_couponController.text.trim().toUpperCase() == 'DISCOUNT10') {
+        couponMessage = 'Coupon applied: 10% off!';
+      } else {
+        couponMessage = 'Invalid coupon code.';
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     String title = widget.event['title'] ?? 'No Title Available';
     String date = widget.event['date'] ?? 'No Date Available';
     String time = widget.event['time'] ?? 'No Time Available';
-    String location = widget.event['location'] ?? 'Location Not Provided';
+    //String location = widget.event['location'] ?? 'Location Not Provided';
     String image = widget.event['image'] ?? 'https://via.placeholder.com/400';
 
     double ticketPrice = widget.event['totalPrice'] != null &&
@@ -131,7 +145,8 @@ class _EventDetailState extends State<EventDetail> {
                   top: 40,
                   left: 20,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    icon: const Icon(Icons.arrow_back,
+                        color: Colors.white, size: 28),
                     onPressed: () {
                       Navigator.pop(context);
                     },
@@ -166,7 +181,8 @@ class _EventDetailState extends State<EventDetail> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 18, color: Colors.white),
+                      const Icon(Icons.calendar_today,
+                          size: 18, color: Colors.white),
                       const SizedBox(width: 8),
                       Text(
                         '$date | $time',
@@ -176,71 +192,146 @@ class _EventDetailState extends State<EventDetail> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, size: 20, color: Colors.redAccent),
-                      const SizedBox(width: 8),
-                      Text(
-                        location,
-                        style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white),
-                      ),
-                    ],
+                  // Location Container (showing location clearly)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on,
+                            size: 20, color: Colors.white),
+                        const SizedBox(width: 8),
+
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    widget.event['description'] ?? 'No description provided.',
-                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
+                    widget.event['description'] ??
+                        'No description provided.',
+                    style: GoogleFonts.poppins(
+                        fontSize: 16, color: Colors.white),
+                  ),
+                  const SizedBox(height: 16),
+                  // Coupon Container
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Have a coupon?",
+                          style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _couponController,
+                                style: GoogleFonts.poppins(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: "Enter coupon code",
+                                  hintStyle:
+                                  GoogleFonts.poppins(color: Colors.white70),
+                                  filled: true,
+                                  fillColor: Colors.black38,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: _applyCoupon,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(
+                                "Apply",
+                                style: GoogleFonts.poppins(
+                                    color: Colors.black, fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (couponMessage.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              couponMessage,
+                              style: GoogleFonts.poppins(
+                                  color: Colors.white, fontSize: 14),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   // Event Ticket Details Card
                   ClayContainer(
                     depth: 20,
                     borderRadius: 12,
-                    color: const Color(0xFF2BCBF3),
+                    color: Colors.white,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Total Tickets:",
                                   style: GoogleFonts.poppins(
-                                      fontSize: 16, color: Colors.white)),
+                                      fontSize: 16, color: Colors.black)),
                               Text("$totalTickets",
                                   style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
+                                      color: Colors.black)),
                             ],
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Available Tickets:",
                                   style: GoogleFonts.poppins(
-                                      fontSize: 16, color: Colors.white)),
-                              Text(" $availableTickets",
+                                      fontSize: 16, color: Colors.black)),
+                              Text("$availableTickets",
                                   style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
+                                      color: Colors.black)),
                             ],
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Total Price:",
                                   style: GoogleFonts.poppins(
-                                      fontSize: 16, color: Colors.white)),
+                                      fontSize: 16, color: Colors.black)),
                               Text("৳ ${totalPrice.toStringAsFixed(2)}",
                                   style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
+                                      color: Colors.black)),
                             ],
                           ),
                           const SizedBox(height: 10),
@@ -248,21 +339,25 @@ class _EventDetailState extends State<EventDetail> {
                               style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
+                                  color: Colors.black)),
                           const SizedBox(height: 10),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.black12,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
                                   onPressed: _decrementTickets,
-                                  icon: const Icon(Icons.remove_circle_outline,
-                                      size: 32, color: Colors.white),
+                                  icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                      size: 32,
+                                      color: Colors.white),
                                 ),
                                 Text(
                                   '$selectedTickets',
@@ -273,8 +368,10 @@ class _EventDetailState extends State<EventDetail> {
                                 ),
                                 IconButton(
                                   onPressed: _incrementTickets,
-                                  icon: const Icon(Icons.add_circle_outline,
-                                      size: 32, color: Colors.white),
+                                  icon: const Icon(
+                                      Icons.add_circle_outline,
+                                      size: 32,
+                                      color: Colors.white),
                                 ),
                               ],
                             ),
@@ -284,7 +381,7 @@ class _EventDetailState extends State<EventDetail> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // Tappable Book Ticket button with Hero animation for smooth transition
+                  // Tappable Book Ticket button with updated white style
                   Center(
                     child: InkWell(
                       onTap: _buyTicket,
@@ -301,14 +398,14 @@ class _EventDetailState extends State<EventDetail> {
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(16),
-                              color: const Color(0xFF800080),
+                              color: Colors.white70,
                             ),
                             child: Text(
                               "Book Ticket",
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Colors.black54,
                               ),
                             ),
                           ),

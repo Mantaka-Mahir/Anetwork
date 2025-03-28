@@ -9,6 +9,7 @@ class PastEventScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Dummy data count: 5 past events
     return Scaffold(
+      backgroundColor: Colors.redAccent,
       appBar: AppBar(
         title: Text(
           'Past Events',

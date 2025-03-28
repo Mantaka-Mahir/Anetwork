@@ -15,34 +15,10 @@ class PaymentMethodScreen extends StatefulWidget {
 
 class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   String selectedPaymentMethod = 'Credit Card';
-  final TextEditingController couponController = TextEditingController();
-  bool couponApplied = false;
-
-  void _applyCoupon() {
-    if (couponController.text.trim().toUpperCase() == 'DISCOUNT10') {
-      setState(() {
-        couponApplied = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Coupon Applied! 10% discount applied.')),
-      );
-    } else {
-      setState(() {
-        couponApplied = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid coupon code.')),
-      );
-    }
-  }
 
   void _confirmPayment() {
     double ticketPrice = widget.event['ticketPrice'] ?? 0;
     double totalPrice = widget.ticketsBought * ticketPrice;
-
-    if (couponApplied) {
-      totalPrice *= 0.9; // Apply 10% discount
-    }
 
     // Using a fade transition when navigating to the confirmation screen
     Navigator.push(
@@ -53,7 +29,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           event: widget.event,
           ticketsBought: widget.ticketsBought,
           totalPrice: totalPrice,
-          couponApplied: couponApplied,
+          couponApplied: false,
         ),
         transitionsBuilder: (_, animation, __, child) {
           return FadeTransition(
@@ -112,10 +88,6 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   Widget build(BuildContext context) {
     double ticketPrice = widget.event['ticketPrice'] ?? 0;
     double totalPrice = widget.ticketsBought * ticketPrice;
-
-    if (couponApplied) {
-      totalPrice *= 0.9; // Apply coupon discount
-    }
 
     return Scaffold(
       backgroundColor: Colors.red,
@@ -216,36 +188,6 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               const SizedBox(height: 10),
               _buildPaymentCard("Credit Card", "https://cdn-icons-png.flaticon.com/512/217/217841.png"),
               _buildPaymentCard("PayPal", "https://cdn-icons-png.flaticon.com/512/888/888870.png"),
-              const SizedBox(height: 20),
-              Text(
-                "Enter Coupon Code",
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: couponController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        hintText: "Enter coupon code",
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _applyCoupon,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text("Apply"),
-                  ),
-                ],
-              ),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(

@@ -23,7 +23,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("User added: $_name, $_email, $_phone, Tickets: $_ticketCount"),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.black,
         ),
       );
       // Optionally navigate back or clear the form.
@@ -33,10 +33,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.red,
       appBar: AppBar(
         title: Text("Add User", style: GoogleFonts.poppins()),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.white70,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -104,7 +105,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
               ElevatedButton(
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
+                  backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -115,7 +116,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ),

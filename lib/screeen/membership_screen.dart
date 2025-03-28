@@ -95,7 +95,8 @@ class MembershipScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MembershipDetailScreen(plan: plans[index]),
+                    builder: (context) =>
+                        MembershipDetailScreen(plan: plans[index]),
                   ),
                 );
               },
@@ -178,7 +179,8 @@ class MembershipCard extends StatelessWidget {
                     SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.access_time, color: Colors.white70, size: 16),
+                        Icon(Icons.access_time,
+                            color: Colors.white70, size: 16),
                         SizedBox(width: 8),
                         Text(
                           plan.timeRange,
@@ -188,7 +190,8 @@ class MembershipCard extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(100),
@@ -216,7 +219,8 @@ class MembershipCard extends StatelessWidget {
 class MembershipDetailScreen extends StatelessWidget {
   final MembershipPlan plan;
 
-  const MembershipDetailScreen({Key? key, required this.plan}) : super(key: key);
+  const MembershipDetailScreen({Key? key, required this.plan})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +250,10 @@ class MembershipDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     plan.name,
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -256,18 +263,48 @@ class MembershipDetailScreen extends StatelessWidget {
                   SizedBox(height: 20),
                   Text(
                     '৳ ${plan.price}',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
-                  Text('Amenities:', style: TextStyle(color: Colors.white, fontSize: 20)),
+                  Text('Amenities:',
+                      style: TextStyle(color: Colors.white, fontSize: 20)),
                   ...plan.amenities.map((amenity) => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('• $amenity', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                    child: Text('• $amenity',
+                        style:
+                        TextStyle(color: Colors.grey, fontSize: 16)),
                   )),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: () {
+            // Add your booking logic here.
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Booking confirmed!'),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            'BOOK',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );

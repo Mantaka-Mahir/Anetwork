@@ -9,6 +9,7 @@ class EditCurrentEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.redAccent,
       appBar: AppBar(
         title: Text(
           'Event Details',
