@@ -120,15 +120,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: _toggleDarkMode,
-            icon: Icon(
-              isDarkMode ? Icons.dark_mode : Icons.light_mode,
-              color: Colors.white,
-            ),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: _toggleDarkMode,
+        //     icon: Icon(
+        //       isDarkMode ? Icons.dark_mode : Icons.light_mode,
+        //       color: Colors.white,
+        //     ),
+        //   ),
+        // ],
       ),
       body: SafeArea(
         child: Column(
@@ -158,7 +158,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       'Events',
                       Icons.event,
                       Colors.blue,
-                      'https://tinyurl.com/5atfvs5y',
+                      'https://tinyurl.com/4mdxuw5t',
                           () {
                         Navigator.push(
                           context,
@@ -181,7 +181,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       'Food',
                       Icons.restaurant,
                       Colors.orange,
-                      'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
+                      'https://tinyurl.com/5n75jpap',
                           () {},
                       1,
                     ),
@@ -190,7 +190,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       'Merch',
                       Icons.shopping_bag,
                       Colors.purple,
-                      'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
+                      'https://tinyurl.com/58yyanwt',
                           () {},
                       2,
                     ),
@@ -199,7 +199,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       'Membership',
                       Icons.wallet_membership,
                       Colors.green,
-                      'https://tinyurl.com/tsru8aat',
+                      'https://tinyurl.com/3xfwjjsc',
                           () {},
                       3,
                     ),

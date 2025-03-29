@@ -7,6 +7,7 @@ import 'package:event_management_app/screeen/log%20in.dart';
 import 'package:event_management_app/screeen/membership_screen.dart';
 import 'package:event_management_app/screeen/merch_screen.dart';
 import 'package:event_management_app/screeen/privacy_policy_screen.dart';
+import 'package:event_management_app/screeen/profile_screen.dart';
 import 'package:event_management_app/screeen/signup.dart';
 import 'package:event_management_app/screeen/support_screen.dart';
 
@@ -218,8 +219,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         ],
       ),
       actions: [
-        // Scanner button added
-
+        // Added Profile Icon Button.
+        IconButton(
+          icon: Icon(
+            Icons.person,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+          onPressed: () {
+            _navigateToScreen(context, const ProfileScreen());
+          },
+        ),
         _buildDarkModeToggle(),
         if (MediaQuery.of(context).size.width > 600) ...[
           _buildNavButton('Home', const EventApp()),
@@ -274,6 +283,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
+        // Existing dark mode toggle (content not modified)
         // child: Icon(
         //   isDarkMode ? Icons.dark_mode : Icons.light_mode,
         //   color: isDarkMode ? Colors.white : Colors.black,
