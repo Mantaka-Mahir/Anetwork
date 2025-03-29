@@ -10,7 +10,8 @@ class AddEventScreen extends StatefulWidget {
 
 class _AddEventScreenState extends State<AddEventScreen> {
   final _formKey = GlobalKey<FormState>();
-  DateTime selectedDate = DateTime.now();
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -47,29 +48,59 @@ class _AddEventScreenState extends State<AddEventScreen> {
                 },
               ),
               const SizedBox(height: 16),
+              // Start Date Picker
               InkWell(
                 onTap: () async {
                   final DateTime? picked = await showDatePicker(
                     context: context,
-                    initialDate: selectedDate,
+                    initialDate: startDate,
                     firstDate: DateTime.now(),
                     lastDate: DateTime(2101),
                   );
-                  if (picked != null && picked != selectedDate) {
+                  if (picked != null && picked != startDate) {
                     setState(() {
-                      selectedDate = picked;
+                      startDate = picked;
                     });
                   }
                 },
                 child: InputDecorator(
                   decoration: InputDecoration(
-                    labelText: 'Date',
+                    labelText: 'Start Date',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: Text(
-                    selectedDate.toString().split(' ')[0],
+                    startDate.toString().split(' ')[0],
+                    style: GoogleFonts.poppins(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // End Date Picker
+              InkWell(
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: endDate,
+                    firstDate: startDate,
+                    lastDate: DateTime(2101),
+                  );
+                  if (picked != null && picked != endDate) {
+                    setState(() {
+                      endDate = picked;
+                    });
+                  }
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'End Date',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    endDate.toString().split(' ')[0],
                     style: GoogleFonts.poppins(),
                   ),
                 ),

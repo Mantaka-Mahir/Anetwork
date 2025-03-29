@@ -363,7 +363,7 @@ class _EventDetailState extends State<EventDetail> {
                                   '$selectedTickets',
                                   style: GoogleFonts.poppins(
                                       fontSize: 20,
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 IconButton(

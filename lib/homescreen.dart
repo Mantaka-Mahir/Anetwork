@@ -274,10 +274,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Icon(
-          isDarkMode ? Icons.dark_mode : Icons.light_mode,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
+        // child: Icon(
+        //   isDarkMode ? Icons.dark_mode : Icons.light_mode,
+        //   color: isDarkMode ? Colors.white : Colors.black,
+        // ),
       ),
     );
   }
