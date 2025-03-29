@@ -1,3 +1,4 @@
+import 'package:event_management_app/screeen/payment_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -288,6 +289,7 @@ class MembershipDetailScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () {
             // Add your booking logic here.
+            Navigator.push(context, MaterialPageRoute(builder: (contex)=>MembershipPaymentScreen()));
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Booking confirmed!'),
