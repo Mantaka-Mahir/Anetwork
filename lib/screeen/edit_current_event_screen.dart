@@ -1,10 +1,18 @@
-import 'package:event_management_app/screeen/adduser.dart';
-import 'package:event_management_app/screeen/edit_event_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../models/event.dart';
+import 'adduser.dart';
+import 'edit_event_screen.dart';
 
 class EditCurrentEventScreen extends StatelessWidget {
-  const EditCurrentEventScreen({Key? key}) : super(key: key);
+  final Event event;
+
+  const EditCurrentEventScreen({
+    Key? key,
+    required this.event,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +31,7 @@ class EditCurrentEventScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AddEventScreen(),
+                  builder: (context) => EditEventScreen(event: event),
                 ),
               );
             },
@@ -37,7 +45,6 @@ class EditCurrentEventScreen extends StatelessWidget {
           children: [
             _buildEventHeader(),
             const SizedBox(height: 24),
-            // NEW: Row with "Booked Users" header and "Add User" button at top right
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -50,8 +57,12 @@ class EditCurrentEventScreen extends StatelessWidget {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    // TODO: Navigate to your "Add User" screen (to be implemented)
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>AddUserScreen()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddUserScreen(eventId: event.id),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.add),
                   label: Text(
@@ -59,7 +70,7 @@ class EditCurrentEventScreen extends StatelessWidget {
                     style: GoogleFonts.poppins(),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white54, // Button background color
+                    backgroundColor: Colors.white54,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -81,90 +92,217 @@ class EditCurrentEventScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Summer Festival 2025',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Event Banner
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+            child: CachedNetworkImage(
+              imageUrl: event.bannerUrl,
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                height: 200,
+                color: Colors.grey[300],
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                height: 200,
+                color: Colors.grey[300],
+                child: const Icon(Icons.error),
               ),
             ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Date: July 15, 2025',
-                  style: GoogleFonts.poppins(),
+                  event.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(
-                  'Price: \$29.99',
-                  style: GoogleFonts.poppins(),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Start: ${event.startDate.toString().split(' ')[0]}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                    Text(
+                      'Price: \$${event.price.toStringAsFixed(2)}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'End: ${event.endDate.toString().split(' ')[0]}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                    Text(
+                      'Available: ${event.availableTickets}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Tickets Booked: 50',
-                  style: GoogleFonts.poppins(),
-                ),
-                Text(
-                  'Available: 100',
-                  style: GoogleFonts.poppins(),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildUsersList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 5, // Dummy data count
-      itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: ListTile(
-            title: Text(
-              'User ${index + 1}',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w500,
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('events')
+          .doc(event.id)
+          .collection('users')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Error: ${snapshot.error}',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Text(
+              'No users booked yet',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            final doc = snapshot.data!.docs[index];
+            final data = doc.data() as Map<String, dynamic>;
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'user${index + 1}@example.com',
-                  style: GoogleFonts.poppins(),
+              child: ListTile(
+                title: Text(
+                  data['name'] ?? 'Unknown',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                 ),
-                Text(
-                  '+1 234 567 890${index}',
-                  style: GoogleFonts.poppins(),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data['email'] ?? 'No email',
+                      style: GoogleFonts.poppins(),
+                    ),
+                    Text(
+                      'Phone: ${data['phone'] ?? 'No phone'}',
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            trailing: Text(
-              '${index + 1} tickets',
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${data['ticketCount'] ?? 0} tickets',
+                    style: GoogleFonts.poppins(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                onLongPress: () => _showDeleteDialog(context, doc.id),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showDeleteDialog(BuildContext context, String userId) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Delete User',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'Are you sure you want to delete this user?',
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
               style: GoogleFonts.poppins(),
             ),
           ),
-        );
-      },
+          TextButton(
+            onPressed: () async {
+              try {
+                await FirebaseFirestore.instance
+                    .collection('events')
+                    .doc(event.id)
+                    .collection('users')
+                    .doc(userId)
+                    .delete();
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('User deleted successfully')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting user: $e')),
+                  );
+                }
+              }
+            },
+            child: Text(
+              'Delete',
+              style: GoogleFonts.poppins(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

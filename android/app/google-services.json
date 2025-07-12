@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "431627286675",
+    "project_id": "neo-fest-hackathon",
+    "storage_bucket": "neo-fest-hackathon.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431627286675:android:760a0e217e39e23c21b566",
+        "android_client_info": {
+          "package_name": "com.example.attentionnetwork"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCroHlk-kmfFwRvAURDsB_SgfyB5uv76cI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

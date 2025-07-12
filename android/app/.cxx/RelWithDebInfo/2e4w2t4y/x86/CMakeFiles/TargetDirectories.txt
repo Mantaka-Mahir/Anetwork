@@ -1,0 +1,2 @@
+C:/Users/manta/Desktop/attentionnetwork-final-backend/attentionnetwork-final-backend/android/app/.cxx/RelWithDebInfo/2e4w2t4y/x86/CMakeFiles/edit_cache.dir
+C:/Users/manta/Desktop/attentionnetwork-final-backend/attentionnetwork-final-backend/android/app/.cxx/RelWithDebInfo/2e4w2t4y/x86/CMakeFiles/rebuild_cache.dir

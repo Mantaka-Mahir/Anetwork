@@ -91,7 +91,7 @@ class _EventDetailState extends State<EventDetail> {
     String image = widget.event['image'] ?? 'https://via.placeholder.com/400';
 
     double ticketPrice = widget.event['totalPrice'] != null &&
-        widget.event['totalPrice'] is double
+            widget.event['totalPrice'] is double
         ? widget.event['totalPrice']
         : 100;
 
@@ -204,16 +204,14 @@ class _EventDetailState extends State<EventDetail> {
                         const Icon(Icons.location_on,
                             size: 20, color: Colors.white),
                         const SizedBox(width: 8),
-
                       ],
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    widget.event['description'] ??
-                        'No description provided.',
-                    style: GoogleFonts.poppins(
-                        fontSize: 16, color: Colors.white),
+                    widget.event['description'] ?? 'No description provided.',
+                    style:
+                        GoogleFonts.poppins(fontSize: 16, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
                   // Coupon Container
@@ -242,8 +240,8 @@ class _EventDetailState extends State<EventDetail> {
                                 style: GoogleFonts.poppins(color: Colors.white),
                                 decoration: InputDecoration(
                                   hintText: "Enter coupon code",
-                                  hintStyle:
-                                  GoogleFonts.poppins(color: Colors.white70),
+                                  hintStyle: GoogleFonts.poppins(
+                                      color: Colors.white70),
                                   filled: true,
                                   fillColor: Colors.black38,
                                   border: OutlineInputBorder(
@@ -293,8 +291,7 @@ class _EventDetailState extends State<EventDetail> {
                       child: Column(
                         children: [
                           Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Total Tickets:",
                                   style: GoogleFonts.poppins(
@@ -307,8 +304,7 @@ class _EventDetailState extends State<EventDetail> {
                             ],
                           ),
                           Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Available Tickets:",
                                   style: GoogleFonts.poppins(
@@ -321,8 +317,7 @@ class _EventDetailState extends State<EventDetail> {
                             ],
                           ),
                           Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text("Total Price:",
                                   style: GoogleFonts.poppins(
@@ -342,22 +337,18 @@ class _EventDetailState extends State<EventDetail> {
                                   color: Colors.black)),
                           const SizedBox(height: 10),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             decoration: BoxDecoration(
                               color: Colors.black12,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
                                   onPressed: _decrementTickets,
-                                  icon: const Icon(
-                                      Icons.remove_circle_outline,
-                                      size: 32,
-                                      color: Colors.white),
+                                  icon: const Icon(Icons.remove_circle_outline,
+                                      size: 32, color: Colors.white),
                                 ),
                                 Text(
                                   '$selectedTickets',
@@ -368,10 +359,8 @@ class _EventDetailState extends State<EventDetail> {
                                 ),
                                 IconButton(
                                   onPressed: _incrementTickets,
-                                  icon: const Icon(
-                                      Icons.add_circle_outline,
-                                      size: 32,
-                                      color: Colors.white),
+                                  icon: const Icon(Icons.add_circle_outline,
+                                      size: 32, color: Colors.white),
                                 ),
                               ],
                             ),

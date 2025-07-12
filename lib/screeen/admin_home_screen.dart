@@ -3,17 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clay_containers/clay_containers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/supabase_service.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
 
   @override
-  _AdminHomeScreenState createState() => _AdminHomeScreenState();
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   bool isDarkMode = false;
   double opacityLevel = 0.0; // For fade-in animation
+  final _auth = FirebaseAuth.instance;
+  final _supabaseService = SupabaseService();
 
   @override
   void initState() {
@@ -26,10 +32,72 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     });
   }
 
-  void _toggleDarkMode() {
-    setState(() {
-      isDarkMode = !isDarkMode;
-    });
+  Future<void> _signOut() async {
+    try {
+      await _auth.signOut();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/signup',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error signing out')),
+      );
+    }
+  }
+  
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image != null) {
+      try {
+        File file = File(image.path);
+        
+        // Validate file
+        if (!file.existsSync()) {
+          throw Exception('Image file does not exist');
+        }
+        
+        final fileSize = await file.length();
+        if (fileSize > 10 * 1024 * 1024) { // 10MB limit
+          throw Exception('Image file is too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 10MB.');
+        }
+        
+        // Use Supabase service
+        String? imageUrl = await _supabaseService.uploadFile(
+          file,
+          folder: 'admin_uploads',
+          bucket: 'admin_uploads',
+        );
+        
+        if (imageUrl != null) {
+          // Use the imageUrl as needed (e.g., save to Firestore)
+          print('Image uploaded successfully to Supabase: $imageUrl');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Image uploaded successfully to Supabase!')),
+            );
+          }
+        } else {
+          throw Exception('Failed to upload image to Supabase');
+        }
+      } catch (e) {
+        print('Error uploading image: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+    }
   }
 
   /// Updated Navigation Card Builder with Hero and fade transition.
@@ -54,43 +122,57 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             depth: 40,
             spread: 2,
             color: isDarkMode ? Colors.grey[850] : Colors.grey[200],
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                image: DecorationImage(
-                  image: CachedNetworkImageProvider(backgroundImageUrl),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.4),
-                    BlendMode.darken,
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: CachedNetworkImage(
+                    imageUrl: backgroundImageUrl,
+                    fit: BoxFit.cover,
+                    height: double.infinity,
+                    width: double.infinity,
+                    placeholder: (context, url) => Container(
+                      color: color.withOpacity(0.3),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: color.withOpacity(0.3),
+                      child: Icon(Icons.error, color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.black.withOpacity(0.4),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(icon, size: 40, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                      Row(
+                        children: [
+                          Icon(icon, size: 40, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        ],
                       ),
+                      // You can add additional details (e.g., time range, price) here if needed.
                     ],
                   ),
-                  // You can add additional details (e.g., time range, price) here if needed.
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -120,15 +202,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
           ],
         ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: _toggleDarkMode,
-        //     icon: Icon(
-        //       isDarkMode ? Icons.dark_mode : Icons.light_mode,
-        //       color: Colors.white,
-        //     ),
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: _signOut,
+          ),
+          IconButton(
+            icon: const Icon(Icons.cloud_upload, color: Colors.white),
+            onPressed: _pickImage,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(

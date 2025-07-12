@@ -1,5 +1,6 @@
 import 'package:event_management_app/screeen/payment_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 void main() {
   runApp(MyApp());
@@ -136,11 +137,11 @@ class MembershipCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: Image.network(
-                  plan.backgroundImage,
-                  height: double.infinity,
-                  width: double.infinity,
+                child: CachedNetworkImage(
+                  imageUrl: plan.backgroundImage,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
               ),
               Container(
@@ -237,11 +238,13 @@ class MembershipDetailScreen extends StatelessWidget {
           children: [
             Hero(
               tag: 'membership-${plan.name}',
-              child: Image.network(
-                plan.backgroundImage,
+              child: CachedNetworkImage(
+                imageUrl: plan.backgroundImage,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => Icon(Icons.error),
                 height: 250,
                 width: double.infinity,
-                fit: BoxFit.cover,
               ),
             ),
             Padding(

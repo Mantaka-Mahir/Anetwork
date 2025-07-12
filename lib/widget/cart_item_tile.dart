@@ -1,5 +1,6 @@
 import 'package:event_management_app/widget/cart_item.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../providers/cart_provider.dart';
 import 'package:provider/provider.dart';
@@ -22,11 +23,13 @@ class CartItemTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                cartItem.food.imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: cartItem.food.imageUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
+                placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => Icon(Icons.error),
               ),
             ),
             const SizedBox(width: 16),

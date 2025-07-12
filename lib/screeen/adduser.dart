@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddUserScreen extends StatefulWidget {
-  const AddUserScreen({Key? key}) : super(key: key);
+  final String eventId;
+
+  const AddUserScreen({
+    Key? key,
+    required this.eventId,
+  }) : super(key: key);
 
   @override
   _AddUserScreenState createState() => _AddUserScreenState();
@@ -10,23 +16,50 @@ class AddUserScreen extends StatefulWidget {
 
 class _AddUserScreenState extends State<AddUserScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _firestore = FirebaseFirestore.instance;
 
   String _name = "";
   String _email = "";
   String _phone = "";
   String _ticketCount = "";
+  bool _isLoading = false;
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      // Dummy submission: You can add your logic here.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("User added: $_name, $_email, $_phone, Tickets: $_ticketCount"),
-          backgroundColor: Colors.black,
-        ),
-      );
-      // Optionally navigate back or clear the form.
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    _formKey.currentState!.save();
+    setState(() => _isLoading = true);
+
+    try {
+      // Add user to event's users collection
+      await _firestore
+          .collection('events')
+          .doc(widget.eventId)
+          .collection('users')
+          .add({
+        'name': _name,
+        'email': _email,
+        'phone': _phone,
+        'ticketCount': int.parse(_ticketCount),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User added successfully!')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding user: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -45,79 +78,125 @@ class _AddUserScreenState extends State<AddUserScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              // Name Field
               TextFormField(
                 decoration: InputDecoration(
                   labelText: "Name",
-                  labelStyle: GoogleFonts.poppins(),
-                  border: const OutlineInputBorder(),
+                  labelStyle: GoogleFonts.poppins(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
                 ),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Please enter a name" : null,
-                onSaved: (value) => _name = value!,
-              ),
-              const SizedBox(height: 16),
-              // Email Field
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  labelStyle: GoogleFonts.poppins(),
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Please enter an email" : null,
-                onSaved: (value) => _email = value!,
-              ),
-              const SizedBox(height: 16),
-              // Phone Number Field
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: "Phone Number",
-                  labelStyle: GoogleFonts.poppins(),
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                value == null || value.isEmpty ? "Please enter a phone number" : null,
-                onSaved: (value) => _phone = value!,
-              ),
-              const SizedBox(height: 16),
-              // Ticket Count Field
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: "Number of Tickets",
-                  labelStyle: GoogleFonts.poppins(),
-                  border: const OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
+                style: GoogleFonts.poppins(color: Colors.white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Please enter ticket count";
-                  }
-                  if (int.tryParse(value) == null) {
-                    return "Please enter a valid number";
+                    return 'Please enter name';
                   }
                   return null;
                 },
-                onSaved: (value) => _ticketCount = value!,
+                onSaved: (value) => _name = value ?? '',
               ),
-              const SizedBox(height: 24),
-              // Add User Button
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: "Email",
+                  labelStyle: GoogleFonts.poppins(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
                   ),
                 ),
-                child: Text(
-                  "Add User",
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                style: GoogleFonts.poppins(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter email';
+                  }
+                  if (!value.contains('@')) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _email = value ?? '',
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: "Phone",
+                  labelStyle: GoogleFonts.poppins(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                ),
+                style: GoogleFonts.poppins(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter phone number';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _phone = value ?? '',
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: "Number of Tickets",
+                  labelStyle: GoogleFonts.poppins(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.white),
+                  ),
+                ),
+                style: GoogleFonts.poppins(color: Colors.white),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter number of tickets';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _ticketCount = value ?? '',
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : Text(
+                          'Add User',
+                          style: GoogleFonts.poppins(
+                            color: Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],

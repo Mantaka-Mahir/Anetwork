@@ -1,61 +1,42 @@
-import 'package:event_management_app/screeen/about_screen.dart';
-import 'package:event_management_app/screeen/adminloginscreen.dart';
-import 'package:event_management_app/screeen/contact_screen.dart';
-import 'package:event_management_app/screeen/events_screen.dart';
-import 'package:event_management_app/screeen/food_screen.dart';
-import 'package:event_management_app/screeen/log%20in.dart';
-import 'package:event_management_app/screeen/membership_screen.dart';
-import 'package:event_management_app/screeen/merch_screen.dart';
-import 'package:event_management_app/screeen/privacy_policy_screen.dart';
-import 'package:event_management_app/screeen/profile_screen.dart';
-import 'package:event_management_app/screeen/signup.dart';
-import 'package:event_management_app/screeen/support_screen.dart';
-
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'screeen/log in.dart';
+import 'screeen/signup.dart';
+import 'screeen/about_screen.dart';
+import 'screeen/contact_screen.dart';
+import 'screeen/events_screen.dart';
+import 'screeen/food_screen.dart';
+import 'screeen/membership_screen.dart';
+import 'screeen/merch_screen.dart';
+import 'screeen/profile_screen.dart';
+import 'screeen/privacy_policy_screen.dart';
+import 'screeen/support_screen.dart';
 
-void main() {
-  runApp(const EventApp());
-}
-
-class EventApp extends StatelessWidget {
+class EventApp extends StatefulWidget {
   const EventApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Event Management App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  _EventAppState createState() => _EventAppState();
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  bool isDarkMode = false;
+class _EventAppState extends State<EventApp> with SingleTickerProviderStateMixin {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _userName = '';
+  bool _isLoading = true;
+  bool isDarkMode = false;
 
   final String _eventsBgUrl = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30';
   final String _merchBgUrl = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8';
   final String _foodBgUrl = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836';
 
-  // Social media links
   final String _facebookUrl = 'https://www.facebook.com/theattentionnetwork';
   final String _linkedinUrl = 'https://www.linkedin.com/company/the-attention-network-99';
   final String _instagramUrl = 'https://www.instagram.com/theattentionnetwork/';
@@ -63,6 +44,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    _loadUserData();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
@@ -78,14 +60,61 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
-  // Improved URL launcher with error handling.
+  Future<void> _loadUserData() async {
+    setState(() => _isLoading = true);
+    
+    final user = _auth.currentUser;
+    if (user != null) {
+      try {
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        
+        if (mounted) {
+          setState(() {
+            _userName = userDoc.data()?['name'] ?? user.email?.split('@')[0] ?? 'User';
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _userName = user.email?.split('@')[0] ?? 'User';
+            _isLoading = false;
+          });
+        }
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _userName = '';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signOut() async {
+    try {
+      await _auth.signOut();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error signing out')),
+      );
+    }
+  }
+
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     try {
-      if (!await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      )) {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         throw 'Could not launch $url';
       }
     } catch (e) {
@@ -95,7 +124,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
-  // Method to navigate to different screens using a fade transition.
   void _navigateToScreen(BuildContext context, Widget screen) {
     Navigator.push(
       context,
@@ -112,98 +140,24 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Set a vibrant red background as requested.
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.red,
-      appBar: _buildAppBar(context),
-      drawer: _buildDrawer(context),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeroSection(context),
-            _buildOptionsGrid(context),
-            _buildFooter(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: Container(
-        color: isDarkMode ? Colors.grey[850] : Colors.white,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.white),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 10),
-                  Image.asset(
-                    'assets/eventhub_logo.png', // Use your uploaded logo
-                    height: 50,
-                    fit: BoxFit.contain,
-                  ),
-                ],
-              ),
-            ),
-            _buildDrawerItem(Icons.home, 'Home', const EventApp()),
-            _buildDrawerItem(Icons.event, 'Events', EventsScreen()),
-            _buildDrawerItem(Icons.card_membership, 'Membership', MembershipScreen()),
-            _buildDrawerItem(Icons.shopping_bag, 'Merch', MerchScreen()),
-            _buildDrawerItem(Icons.restaurant, 'Food', const FoodScreen()),
-            _buildDrawerItem(Icons.contact_mail, 'Contact', const ContactScreen()),
-            const Divider(),
-            _buildDrawerItem(Icons.login, 'Log In', LoginScreen()),
-            _buildDrawerItem(Icons.person_add, 'Sign Up', SignUpScreen()),
-            _buildDrawerItem(Icons.admin_panel_settings, 'Admin', AdminLoginScreen()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(IconData icon, String title, Widget screen) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDarkMode ? Colors.white70 : Colors.black87,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDarkMode ? Colors.white70 : Colors.black87,
-        ),
-      ),
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-        _navigateToScreen(context, screen);
-      },
-    );
-  }
-
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final user = _auth.currentUser;
+    
     return AppBar(
       elevation: 0,
       backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
       leading: MediaQuery.of(context).size.width <= 600
           ? IconButton(
-        icon: const Icon(Icons.menu),
-        onPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-      )
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+            )
           : null,
       title: Row(
         children: [
           Image.asset(
-            'assets/logo.png', // Place your logo in assets folder
+            'assets/logo.png',
             height: 25,
           ),
           const SizedBox(width: 16),
@@ -212,14 +166,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: Text(
               'Attention Network',
               style: TextStyle(
-                color: isDarkMode ? Colors.black : Colors.black,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
           ),
         ],
       ),
       actions: [
-        // Added Profile Icon Button.
+        if (!_isLoading && user != null) ...[
+          Text(
+            _userName,
+            style: TextStyle(
+              color: isDarkMode ? Colors.white : Colors.black,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
         IconButton(
           icon: Icon(
             Icons.person,
@@ -229,15 +192,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             _navigateToScreen(context, const ProfileScreen());
           },
         ),
+        if (user != null)
+          IconButton(
+            icon: Icon(Icons.logout, color: isDarkMode ? Colors.white : Colors.red),
+            onPressed: _signOut,
+          ),
         _buildDarkModeToggle(),
         if (MediaQuery.of(context).size.width > 600) ...[
           _buildNavButton('Home', const EventApp()),
           _buildNavButton('Events', EventsScreen()),
           _buildNavButton('Membership', MembershipScreen()),
           _buildNavButton('Merch', MerchScreen()),
-          _buildNavButton('Food', FoodScreen()),
-          _buildAuthButton('Log In', LoginScreen()),
-          _buildAuthButton('Sign Up', SignUpScreen()),
+          _buildNavButton('Food', const FoodScreen()),
+          if (user == null) ...[
+            _buildAuthButton('Login', const LoginScreen()),
+            _buildAuthButton('Sign Up', const SignUpScreen()),
+          ],
         ],
       ],
     );
@@ -283,73 +253,78 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        // Existing dark mode toggle (content not modified)
-        // child: Icon(
-        //   isDarkMode ? Icons.dark_mode : Icons.light_mode,
-        //   color: isDarkMode ? Colors.white : Colors.black,
-        // ),
-      ),
-    );
-  }
-
-  Widget _buildHeroSection(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: NetworkImage(_eventsBgUrl),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.5),
-            BlendMode.darken,
-          ),
+        child: Icon(
+          isDarkMode ? Icons.dark_mode : Icons.light_mode,
+          color: isDarkMode ? Colors.white : Colors.black,
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Experience Amazing Events',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width > 600 ? 48 : 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Your one-stop platform for events, merchandise, and food ordering',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width > 600 ? 20 : 16,
-                color: Colors.white70,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: () => _navigateToScreen(context, EventsScreen()),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.blue,
-              backgroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              textStyle: const TextStyle(fontSize: 18),
-            ),
-            child: const Text('Explore Events'),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildOptionsGrid(BuildContext context) {
+  Widget _buildHeroSection() {
+    return Stack(
+      children: [
+        CachedNetworkImage(
+          imageUrl: _eventsBgUrl,
+          height: MediaQuery.of(context).size.height * 0.7,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+          errorWidget: (context, url, error) => Container(
+            color: Colors.black54,
+            child: Icon(Icons.error, color: Colors.white),
+          ),
+        ),
+        Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          width: double.infinity,
+          color: Colors.black.withOpacity(0.5),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Experience Amazing Events',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width > 600 ? 48 : 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Your one-stop platform for events, merchandise, and food ordering',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width > 600 ? 20 : 16,
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton(
+                onPressed: () => _navigateToScreen(context, EventsScreen()),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.blue,
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+                child: const Text('Explore Events'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptionsGrid() {
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: LayoutBuilder(
@@ -360,15 +335,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             crossAxisCount: constraints.maxWidth > 900
                 ? 3
                 : constraints.maxWidth > 600
-                ? 2
-                : 1,
+                    ? 2
+                    : 1,
             crossAxisSpacing: 20,
             mainAxisSpacing: 20,
             childAspectRatio: constraints.maxWidth > 600 ? 1.2 : 1.5,
             children: [
               _buildOptionCard('Events', Icons.event, 'View Details → Purchase Tickets', Colors.blue, _eventsBgUrl, EventsScreen()),
               _buildOptionCard('Merch', Icons.shopping_bag, 'Browse & Purchase', Colors.green, _merchBgUrl, MerchScreen()),
-              _buildOptionCard('Food', Icons.restaurant, 'View Menu → Order Food', Colors.orange, _foodBgUrl, FoodScreen()),
+              _buildOptionCard('Food', Icons.restaurant, 'View Menu → Order Food', Colors.orange, _foodBgUrl, const FoodScreen()),
             ],
           );
         },
@@ -384,58 +359,62 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         onTap: () => _navigateToScreen(context, screen),
         child: ScaleTransition(
           scale: _scaleAnimation,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-              image: DecorationImage(
-                image: NetworkImage(backgroundUrl),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.6),
-                  BlendMode.darken,
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: CachedNetworkImage(
+                  imageUrl: backgroundUrl,
+                  height: double.infinity,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Container(
+                    color: color.withOpacity(0.2),
+                    child: Icon(Icons.error),
+                  ),
                 ),
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.black.withOpacity(0.6),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(icon, size: 24, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Row(
+                      children: [
+                        Icon(icon, size: 24, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter() {
     return Container(
       padding: const EdgeInsets.all(24),
       color: isDarkMode ? Colors.grey[850] : Colors.grey[200],
@@ -482,6 +461,103 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       icon: Icon(icon),
       onPressed: () => _launchUrl(url),
       color: isDarkMode ? Colors.white70 : Colors.black54,
+    );
+  }
+
+  Widget _buildDrawer() {
+    final user = _auth.currentUser;
+    
+    return Drawer(
+      child: Container(
+        color: isDarkMode ? Colors.grey[850] : Colors.white,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[900] : Colors.blue,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 40, color: Colors.blue),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _isLoading ? 'Loading...' : (user != null ? _userName : 'Guest User'),
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                      fontSize: 18,
+                    ),
+                  ),
+                  if (user != null) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      user.email ?? '',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            _buildDrawerItem(Icons.event, 'Events', EventsScreen()),
+            _buildDrawerItem(Icons.info, 'About', AboutScreen()),
+            _buildDrawerItem(Icons.card_membership, 'Membership', MembershipScreen()),
+            _buildDrawerItem(Icons.shopping_bag, 'Merch', MerchScreen()),
+            _buildDrawerItem(Icons.restaurant, 'Food', const FoodScreen()),
+            _buildDrawerItem(Icons.contact_mail, 'Contact', const ContactScreen()),
+            const Divider(color: Colors.white24),
+            if (user != null) ...[
+              _buildDrawerItem(Icons.person, 'Profile', const ProfileScreen()),
+              _buildDrawerItem(Icons.logout, 'Logout', null, onTap: _signOut),
+            ] else ...[
+              _buildDrawerItem(Icons.login, 'Login', const LoginScreen()),
+              _buildDrawerItem(Icons.person_add, 'Sign Up', const SignUpScreen()),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, Widget? destination, {VoidCallback? onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: isDarkMode ? Colors.white : Colors.black),
+      title: Text(title, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+      onTap: onTap ?? () {
+        Navigator.pop(context);
+        if (destination != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => destination),
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+      appBar: _buildAppBar(context),
+      drawer: _buildDrawer(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeroSection(),
+            _buildOptionsGrid(),
+            _buildFooter(),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,124 +1,102 @@
-import 'package:event_management_app/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth show User;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'screeen/log in.dart';
+import 'screeen/signup.dart';
+import 'homescreen.dart';
+import 'screeen/admin_home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'firebase_options.dart';
 import 'package:provider/provider.dart';
-import 'package:event_management_app/homescreen.dart'; // Import your CartProvider file
+import 'providers/cart_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Initialize Supabase with actual credentials
+  await Supabase.initialize(
+    url: 'https://qmmidipbamihvkgtmncx.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtbWlkaXBiYW1paHZrZ3RtbmN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyNTgzNTQsImV4cCI6MjA1ODgzNDM1NH0.8G35WjkWMrL0MGTCFqXAyv9i95zYAuCVeXhIJiEWhyw',
+  );
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => CartProvider()),
       ],
-      child: EventManagementApp(),
+      child: const MyApp(),
     ),
   );
 }
 
-class EventManagementApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AnimatedScreen(),
-    );
-  }
-}
-
-class AnimatedScreen extends StatefulWidget {
-  @override
-  _AnimatedScreenState createState() => _AnimatedScreenState();
-}
-
-class _AnimatedScreenState extends State<AnimatedScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.5), end: const Offset(0, 0)).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
-
-    _controller.forward();
-
-    // Auto-navigate after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const EventApp()),
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Image.asset(
-                'assets/logo.png', // Ensure this file exists in your assets folder
-                height: 100,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Welcome Text with Animation
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            // Get Started Button with Animation
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const EventApp()),
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-
-
-                ),
-              ),
-            ),
-          ],
-        ),
+      title: 'Event Management App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        textTheme: GoogleFonts.poppinsTextTheme(),
+        useMaterial3: true,
       ),
+      home: StreamBuilder<firebase_auth.User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (snapshot.hasData) {
+            // User is logged in, check role
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(snapshot.data!.uid)
+                  .get(),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                  final userRole = userData['role'] as String? ?? 'user';
+                  
+                  if (userRole == 'admin') {
+                    // Admin user, redirect to admin home
+                    return const AdminHomeScreen();
+                  } else {
+                    // Regular user, redirect to user home
+                    return const EventApp();
+                  }
+                }
+                
+                // Fallback to user home if data is missing
+                return const EventApp();
+              },
+            );
+          }
+          
+          // User is not logged in
+          return const LoginScreen();
+        },
+      ),
+      routes: {
+        '/signup': (context) => const SignUpScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const EventApp(),
+      },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

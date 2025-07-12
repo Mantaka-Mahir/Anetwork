@@ -1,12 +1,14 @@
 import 'package:event_management_app/screeen/confarmation_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   final Map<String, dynamic> event;
   final int ticketsBought;
 
-  const PaymentMethodScreen({Key? key, required this.event, required this.ticketsBought})
+  const PaymentMethodScreen(
+      {Key? key, required this.event, required this.ticketsBought})
       : super(key: key);
 
   @override
@@ -51,7 +53,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: selectedPaymentMethod == name ? Colors.redAccent : Colors.white,
+          color:
+              selectedPaymentMethod == name ? Colors.redAccent : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(
@@ -65,14 +68,23 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            Image.network(imageUrl, width: 40, height: 40, fit: BoxFit.contain),
+            CachedNetworkImage(
+              imageUrl: imageUrl,
+              width: 40,
+              height: 40,
+              fit: BoxFit.contain,
+              placeholder: (context, url) =>
+                  Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => Icon(Icons.error),
+            ),
             const SizedBox(width: 12),
             Text(
               name,
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: selectedPaymentMethod == name ? Colors.white : Colors.black,
+                color:
+                    selectedPaymentMethod == name ? Colors.white : Colors.black,
               ),
             ),
             const Spacer(),
@@ -113,7 +125,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
-                      image: NetworkImage(
+                      image: CachedNetworkImageProvider(
                         widget.event['image'] ??
                             'https://via.placeholder.com/400',
                       ),
@@ -139,7 +151,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.event, color: Colors.white, size: 24),
+                            const Icon(Icons.event,
+                                color: Colors.white, size: 24),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -183,23 +196,31 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               const SizedBox(height: 20),
               Text(
                 "Select Payment Method",
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               const SizedBox(height: 10),
-              _buildPaymentCard("Credit Card", "https://cdn-icons-png.flaticon.com/512/217/217841.png"),
-              _buildPaymentCard("PayPal", "https://cdn-icons-png.flaticon.com/512/888/888870.png"),
+              _buildPaymentCard("Credit Card",
+                  "https://cdn-icons-png.flaticon.com/512/217/217841.png"),
+              _buildPaymentCard("PayPal",
+                  "https://cdn-icons-png.flaticon.com/512/888/888870.png"),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   onPressed: _confirmPayment,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
                     "Confirm Payment",
-                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

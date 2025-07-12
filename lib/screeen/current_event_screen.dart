@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../models/event.dart';
 import 'edit_current_event_screen.dart';
 
 class CurrentEventScreen extends StatelessWidget {
   const CurrentEventScreen({Key? key}) : super(key: key);
+
+  Stream<List<Event>> _getCurrentEvents() {
+    return FirebaseFirestore.instance
+        .collection('events')
+        .orderBy('startDate', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => Event.fromMap(doc.id, doc.data()))
+          .where((event) => event.isActive)
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,25 +32,53 @@ class CurrentEventScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5, // Dummy data count
-        itemBuilder: (context, index) {
-          return _buildEventCard(
-            context,
-            'Event ${index + 1}',
-            DateTime.now().add(Duration(days: index)),
-            29.99,
-            50,
-            100,
+      body: StreamBuilder<List<Event>>(
+        stream: _getCurrentEvents(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: GoogleFonts.poppins(color: Colors.white),
+              ),
+            );
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final events = snapshot.data ?? [];
+
+          if (events.isEmpty) {
+            return Center(
+              child: Text(
+                'No current events',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: events.length,
+            itemBuilder: (context, index) {
+              final event = events[index];
+              return _buildEventCard(
+                context,
+                event,
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildEventCard(BuildContext context, String name, DateTime date,
-      double price, int booked, int available) {
+  Widget _buildEventCard(BuildContext context, Event event) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
@@ -46,53 +90,79 @@ class CurrentEventScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const EditCurrentEventScreen(),
+              builder: (context) => EditCurrentEventScreen(event: event),
             ),
           );
         },
         borderRadius: BorderRadius.circular(15),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event Banner
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(15)),
+              child: CachedNetworkImage(
+                imageUrl: event.bannerUrl,
+                height: 150,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 150,
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 150,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.error),
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Date: ${date.toString().split(' ')[0]}',
-                    style: GoogleFonts.poppins(),
+                    event.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  Text(
-                    'Price: \$${price.toStringAsFixed(2)}',
-                    style: GoogleFonts.poppins(),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Start: ${event.startDate.toString().split(' ')[0]}',
+                        style: GoogleFonts.poppins(),
+                      ),
+                      Text(
+                        'Price: \$${event.price.toStringAsFixed(2)}',
+                        style: GoogleFonts.poppins(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'End: ${event.endDate.toString().split(' ')[0]}',
+                        style: GoogleFonts.poppins(),
+                      ),
+                      Text(
+                        'Available: ${event.availableTickets}',
+                        style: GoogleFonts.poppins(),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Booked: $booked',
-                    style: GoogleFonts.poppins(),
-                  ),
-                  Text(
-                    'Available: $available',
-                    style: GoogleFonts.poppins(),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

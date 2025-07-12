@@ -19,15 +19,27 @@ dependencies:
   url_launcher: ^6.1.12
   lottie: ^3.2.0
 
+  # Firebase
+  firebase_core: ^2.27.1
+  firebase_auth: ^4.17.9
+  cloud_firestore: ^4.15.9
+
+  # Image upload - using Supabase
+  supabase_flutter: ^2.3.4
+  http: ^1.2.0
+  dio: ^5.4.0
+  uuid: ^4.0.0
+  intl: ^0.18.0
   image_picker: ^0.8.6
   carousel_slider: ^5.0.0
   provider: ^6.1.2
 
   clay_containers: ^0.3.4
 
-  # ✅ Add this for cart & state management
-  flutter_animate: ^4.5.0  # ✅ Add smooth animations
-  flutter_staggered_grid_view: ^0.7.0  # ✅ For better grid layout
+  # Add this for cart & state management
+  flutter_animate: ^4.5.0  # Add smooth animations
+  flutter_staggered_grid_view: ^0.7.0  # For better grid layout
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

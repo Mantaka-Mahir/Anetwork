@@ -1,5 +1,6 @@
 import 'package:event_management_app/widget/food_item.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../providers/cart_provider.dart';
 import 'package:provider/provider.dart';
@@ -20,9 +21,13 @@ class FoodDetailsScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Hero(
                 tag: food.id,
-                child: Image.network(
-                  food.imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: food.imageUrl,
                   fit: BoxFit.cover,
+                  height: 300,
+                  width: double.infinity,
+                  placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
               ),
             ),

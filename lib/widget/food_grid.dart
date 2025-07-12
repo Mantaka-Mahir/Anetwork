@@ -1,10 +1,10 @@
 import 'package:event_management_app/screeen/food_details_screen.dart';
 import 'package:event_management_app/widget/food_item.dart';
 import 'package:flutter/material.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 
 class FoodGrid extends StatelessWidget {
-   FoodGrid({Key? key}) : super(key: key);
+  FoodGrid({Key? key}) : super(key: key);
 
   // Sample food items - in a real app, this would come from a database or API
   final List<FoodItem> foodItems = [
@@ -74,10 +74,14 @@ class FoodGrid extends StatelessWidget {
                 Expanded(
                   child: Hero(
                     tag: food.id,
-                    child: Image.network(
-                      food.imageUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: CachedNetworkImage(
+                        imageUrl: food.imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
                     ),
                   ),
                 ),
