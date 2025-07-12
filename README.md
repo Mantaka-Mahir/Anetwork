@@ -108,54 +108,39 @@ A full-featured event management application built with Flutter that provides a 
 
 ---
 
-## 📱 App Screenshots
+## 📱 App Screenshots Flow
 
-### 🔐 Authentication Flow
 <p align="center">
-  <img src="screenshot/1.jpg" alt="Login Screen" width="250" style="margin: 10px;">
-  <img src="screenshot/2.jpg" alt="Sign Up Screen" width="250" style="margin: 10px;">
+  <img src="screenshot/1.jpg" alt="Screenshot 1" width="200" style="margin: 5px;">
+  <img src="screenshot/2.jpg" alt="Screenshot 2" width="200" style="margin: 5px;">
+  <img src="screenshot/3.jpg" alt="Screenshot 3" width="200" style="margin: 5px;">
+  <img src="screenshot/4.jpg" alt="Screenshot 4" width="200" style="margin: 5px;">
 </p>
-<p align="center"><em>Secure login and registration with Firebase Authentication</em></p>
 
-### 🏠 Home & Navigation
 <p align="center">
-  <img src="screenshot/3.jpg" alt="Home Screen" width="250" style="margin: 10px;">
-  <img src="screenshot/4.jpg" alt="Navigation Menu" width="250" style="margin: 10px;">
+  <img src="screenshot/5.jpg" alt="Screenshot 5" width="200" style="margin: 5px;">
+  <img src="screenshot/6.jpg" alt="Screenshot 6" width="200" style="margin: 5px;">
+  <img src="screenshot/7.jpg" alt="Screenshot 7" width="200" style="margin: 5px;">
+  <img src="screenshot/8.jpg" alt="Screenshot 8" width="200" style="margin: 5px;">
 </p>
-<p align="center"><em>Modern home screen with intuitive navigation drawer</em></p>
 
-### 🎉 Event Management
 <p align="center">
-  <img src="screenshot/5.jpg" alt="Events Screen" width="250" style="margin: 10px;">
-  <img src="screenshot/6.jpg" alt="Event Details" width="250" style="margin: 10px;">
-  <img src="screenshot/7.jpg" alt="Add Event Screen" width="250" style="margin: 10px;">
+  <img src="screenshot/9.jpg" alt="Screenshot 9" width="200" style="margin: 5px;">
+  <img src="screenshot/10.jpg" alt="Screenshot 10" width="200" style="margin: 5px;">
+  <img src="screenshot/11.jpg" alt="Screenshot 11" width="200" style="margin: 5px;">
+  <img src="screenshot/12.jpg" alt="Screenshot 12" width="200" style="margin: 5px;">
 </p>
-<p align="center"><em>Comprehensive event management with real-time updates</em></p>
 
-### 🍽️ Food Ordering System
 <p align="center">
-  <img src="screenshot/8.jpg" alt="Food Menu" width="250" style="margin: 10px;">
-  <img src="screenshot/9.jpg" alt="Food Details" width="250" style="margin: 10px;">
-  <img src="screenshot/10.jpg" alt="Cart Screen" width="250" style="margin: 10px;">
+  <img src="screenshot/13.jpg" alt="Screenshot 13" width="200" style="margin: 5px;">
+  <img src="screenshot/14.jpg" alt="Screenshot 14" width="200" style="margin: 5px;">
+  <img src="screenshot/15.jpg" alt="Screenshot 15" width="200" style="margin: 5px;">
+  <img src="screenshot/16.jpg" alt="Screenshot 16" width="200" style="margin: 5px;">
 </p>
-<p align="center"><em>Full-featured food ordering with cart management</em></p>
 
-### 🛍️ Additional Features
 <p align="center">
-  <img src="screenshot/11.jpg" alt="Merchandise Screen" width="250" style="margin: 10px;">
-  <img src="screenshot/12.jpg" alt="Membership Screen" width="250" style="margin: 10px;">
-  <img src="screenshot/13.jpg" alt="Profile Screen" width="250" style="margin: 10px;">
+  <img src="screenshot/17.jpg" alt="Screenshot 17" width="200" style="margin: 5px;">
 </p>
-<p align="center"><em>Merchandise store, membership management, and user profiles</em></p>
-
-### 👨‍💼 Admin Panel
-<p align="center">
-  <img src="screenshot/14.jpg" alt="Admin Dashboard" width="250" style="margin: 10px;">
-  <img src="screenshot/15.jpg" alt="Admin Event Management" width="250" style="margin: 10px;">
-  <img src="screenshot/16.jpg" alt="User Management" width="250" style="margin: 10px;">
-  <img src="screenshot/17.jpg" alt="Order Confirmation" width="250" style="margin: 10px;">
-</p>
-<p align="center"><em>Comprehensive admin dashboard for complete app management</em></p>
 
 ---
 
