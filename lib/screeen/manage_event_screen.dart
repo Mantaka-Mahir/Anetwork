@@ -24,8 +24,7 @@ class ManageEventScreen extends StatelessWidget {
             _buildEventSection(
               context,
               'Current Events',
-              Colors.white54,
-                  () => Navigator.push(
+              () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const CurrentEventScreen(),
@@ -36,11 +35,10 @@ class ManageEventScreen extends StatelessWidget {
             _buildEventSection(
               context,
               'Past Events',
-              Colors.white54,
-                  () => Navigator.push(
+              () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const PastEventScreen (),
+                  builder: (context) => const PastEventScreen(),
                 ),
               ),
             ),
@@ -51,31 +49,20 @@ class ManageEventScreen extends StatelessWidget {
   }
 
   Widget _buildEventSection(
-      BuildContext context, String title, Color color, VoidCallback onTap) {
+      BuildContext context, String title, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 200,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.7), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Center(
           child: Text(
             title,
             style: GoogleFonts.poppins(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 24,
               fontWeight: FontWeight.w600,
             ),

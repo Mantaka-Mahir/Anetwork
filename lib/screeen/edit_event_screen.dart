@@ -1,20 +1,13 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:clay_containers/clay_containers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import '../models/event.dart';
-import '../services/supabase_service.dart';
+import 'package:intl/intl.dart';
 
 class EditEventScreen extends StatefulWidget {
   final Event event;
-  
-  const EditEventScreen({
-    Key? key,
-    required this.event,
-  }) : super(key: key);
+
+  const EditEventScreen({Key? key, required this.event}) : super(key: key);
 
   @override
   _EditEventScreenState createState() => _EditEventScreenState();
@@ -22,130 +15,82 @@ class EditEventScreen extends StatefulWidget {
 
 class _EditEventScreenState extends State<EditEventScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _ticketsController = TextEditingController();
-  final _startDateController = TextEditingController();
-  final _endDateController = TextEditingController();
-  final _supabaseService = SupabaseService();
+  late final TextEditingController _nameController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _ticketsController;
+  late final TextEditingController _startDateController;
+  late final TextEditingController _endDateController;
+  late final TextEditingController _imageUrlController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _couponCodeController;
+  late final TextEditingController _couponDiscountController;
   final _firestore = FirebaseFirestore.instance;
-  final _imagePicker = ImagePicker();
-  
-  late DateTime startDate;
-  late DateTime endDate;
-  File? _newImageFile;
+
+  late DateTime _startDate;
+  late DateTime _endDate;
   bool _isLoading = false;
+  bool _hasCoupon = false;
 
   @override
   void initState() {
     super.initState();
-    _initControllers();
-  }
+    _nameController = TextEditingController(text: widget.event.name);
+    _priceController =
+        TextEditingController(text: widget.event.price.toString());
+    _ticketsController =
+        TextEditingController(text: widget.event.availableTickets.toString());
+    _startDate = widget.event.startDate;
+    _endDate = widget.event.endDate;
+    _imageUrlController = TextEditingController(text: widget.event.bannerUrl);
+    _descriptionController =
+        TextEditingController(text: widget.event.description);
+    _hasCoupon = widget.event.hasCoupon;
+    _couponCodeController =
+        TextEditingController(text: widget.event.couponCode ?? '');
+    _couponDiscountController = TextEditingController(
+        text: widget.event.couponDiscount?.toString() ?? '');
 
-  void _initControllers() {
-    _nameController.text = widget.event.name;
-    _priceController.text = widget.event.price.toString();
-    _ticketsController.text = widget.event.availableTickets.toString();
-    
-    // Initialize the dates
-    startDate = widget.event.startDate;
-    endDate = widget.event.endDate;
-    
-    // Set the date controllers with formatted dates
-    _startDateController.text = DateFormat('yyyy-MM-dd').format(startDate);
-    _endDateController.text = DateFormat('yyyy-MM-dd').format(endDate);
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        final fileSize = await file.length();
-        
-        // Check file size (limit to 5MB)
-        if (fileSize > 5 * 1024 * 1024) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Image too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 5MB.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-          return;
-        }
-        
-        setState(() {
-          _newImageFile = file;
-        });
-      }
-    } catch (e) {
-      print('Error picking image: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
-      }
-    }
+    _startDateController = TextEditingController(
+        text: DateFormat('yyyy-MM-dd').format(_startDate));
+    _endDateController =
+        TextEditingController(text: DateFormat('yyyy-MM-dd').format(_endDate));
   }
 
   Future<void> _updateEvent() async {
     if (!_formKey.currentState!.validate()) return;
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      // 1. Handle image if changed
-      String eventImageUrl = widget.event.bannerUrl;
-      
-      // Only process image if a new one is selected
-      if (_newImageFile != null) {
-        // Upload new image to Supabase
-        final fileSize = await _newImageFile!.length();
-        
-        if (fileSize > 5 * 1024 * 1024) {
-          throw Exception('Image file is too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 5MB.');
-        }
-        
-        final newImageUrl = await _supabaseService.uploadFile(
-          _newImageFile!,
-          folder: 'events',
-          bucket: SupabaseService.eventImagesBucket,
-        );
 
-        if (newImageUrl != null) {
-          // If image upload was successful
-          eventImageUrl = newImageUrl;
-          
-          // Only attempt to delete the old image if it's not a placeholder URL and different from the new one
-          if (widget.event.bannerUrl.isNotEmpty && 
-              !widget.event.bannerUrl.contains('placeholder.com') && 
-              widget.event.bannerUrl != newImageUrl) {
-            try {
-              // Try to delete old image
-              await _supabaseService.deleteFile(widget.event.bannerUrl, bucket: SupabaseService.eventImagesBucket);
-            } catch (e) {
-              print('Warning: Could not delete old image: $e');
-              // Continue with update even if deletion fails
-            }
-          }
-        } else {
-          // If upload fails, just keep the existing image URL
-          print('Image upload failed, keeping existing image');
-        }
+    setState(() => _isLoading = true);
+
+    try {
+      // Get the new image URL
+      String imageUrl = _imageUrlController.text.trim();
+      if (imageUrl.isEmpty) {
+        imageUrl = 'https://via.placeholder.com/800x400?text=Event+Banner';
       }
-      
+
       // Update event in Firestore
-      await _firestore.collection('events').doc(widget.event.id).update({
-        'name': _nameController.text,
-        'bannerUrl': eventImageUrl,
-        'startDate': Timestamp.fromDate(startDate),
-        'endDate': Timestamp.fromDate(endDate),
-        'price': double.parse(_priceController.text),
-        'availableTickets': int.parse(_ticketsController.text),
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
-      });
+      final updatedEvent = Event(
+        id: widget.event.id,
+        name: _nameController.text,
+        bannerUrl: imageUrl,
+        startDate: _startDate,
+        endDate: _endDate,
+        price: double.parse(_priceController.text),
+        availableTickets: int.parse(_ticketsController.text),
+        createdAt: widget.event.createdAt,
+        ticketsSold: widget.event.ticketsSold,
+        isActive: widget.event.isActive,
+        description: _descriptionController.text,
+        hasCoupon: _hasCoupon,
+        couponCode: _hasCoupon ? _couponCodeController.text : null,
+        couponDiscount:
+            _hasCoupon ? double.tryParse(_couponDiscountController.text) : null,
+      );
+
+      await _firestore
+          .collection('events')
+          .doc(widget.event.id)
+          .update(updatedEvent.toMap());
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -154,15 +99,12 @@ class _EditEventScreenState extends State<EditEventScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      print('Error in _updateEvent: $e');
-      print('Stack trace: ${StackTrace.current}');
-      
+      print('Error updating event: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error updating event: $e'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -180,6 +122,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
     _ticketsController.dispose();
     _startDateController.dispose();
     _endDateController.dispose();
+    _imageUrlController.dispose();
+    _descriptionController.dispose();
+    _couponCodeController.dispose();
+    _couponDiscountController.dispose();
     super.dispose();
   }
 
@@ -188,25 +134,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Edit Event",
+          'Edit Event',
           style: GoogleFonts.poppins(),
         ),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          _isLoading
-              ? const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(color: Colors.white),
-                )
-              : TextButton(
-                  onPressed: _updateEvent,
-                  child: Text(
-                    "Save",
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -215,47 +146,11 @@ class _EditEventScreenState extends State<EditEventScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image upload section
-              Stack(
-                children: [
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.grey),
-                      image: _newImageFile != null
-                          ? DecorationImage(
-                              image: FileImage(_newImageFile!),
-                              fit: BoxFit.cover,
-                            )
-                          : DecorationImage(
-                              image: NetworkImage(widget.event.bannerUrl),
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    bottom: 10,
-                    child: ClayContainer(
-                      color: Colors.white,
-                      borderRadius: 50,
-                      depth: 20,
-                      spread: 2,
-                      child: IconButton(
-                        icon: const Icon(Icons.camera_alt),
-                        onPressed: _pickImage,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildImageUrlField(),
               const Padding(
                 padding: EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Image upload is optional. The current image will be kept if none is selected.",
+                  "Enter a web-hosted image URL. A placeholder will be used if none is provided.",
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ),
@@ -277,7 +172,21 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              // Start Date
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Event Description',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  hintText: 'Provide details about the event...',
+                ),
+                style: GoogleFonts.poppins(),
+                maxLines: 5,
+                keyboardType: TextInputType.multiline,
+              ),
+              const SizedBox(height: 16),
+              // Start Date Picker
               GestureDetector(
                 onTap: () => _selectDate(context, isStartDate: true),
                 child: AbsorbPointer(
@@ -301,7 +210,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // End Date
+              // End Date Picker
               GestureDetector(
                 onTap: () => _selectDate(context, isStartDate: false),
                 child: AbsorbPointer(
@@ -319,7 +228,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please select an end date';
                       }
-                      if (endDate.isBefore(startDate)) {
+                      if (_endDate.isBefore(_startDate)) {
                         return 'End date must be after start date';
                       }
                       return null;
@@ -353,7 +262,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
               TextFormField(
                 controller: _ticketsController,
                 decoration: InputDecoration(
-                  labelText: 'Available Tickets',
+                  labelText: 'Total Tickets',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -362,13 +271,123 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 style: GoogleFonts.poppins(),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter available tickets';
+                    return 'Please enter number of tickets';
                   }
                   if (int.tryParse(value) == null) {
                     return 'Please enter a valid number';
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              // Coupon Section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Coupon Discount',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Switch(
+                          value: _hasCoupon,
+                          activeColor: Colors.red,
+                          onChanged: (value) {
+                            setState(() {
+                              _hasCoupon = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    if (_hasCoupon) ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _couponCodeController,
+                        decoration: InputDecoration(
+                          labelText: 'Coupon Code',
+                          hintText: 'e.g. SUMMER20',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        style: GoogleFonts.poppins(),
+                        textCapitalization: TextCapitalization.characters,
+                        validator: _hasCoupon
+                            ? (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a coupon code';
+                                }
+                                return null;
+                              }
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _couponDiscountController,
+                        decoration: InputDecoration(
+                          labelText: 'Discount Percentage',
+                          hintText: 'e.g. 10',
+                          suffixText: '%',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        style: GoogleFonts.poppins(),
+                        keyboardType: TextInputType.number,
+                        validator: _hasCoupon
+                            ? (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter discount percentage';
+                                }
+                                final discount = double.tryParse(value);
+                                if (discount == null) {
+                                  return 'Please enter a valid number';
+                                }
+                                if (discount <= 0 || discount >= 100) {
+                                  return 'Discount must be between 0 and 100';
+                                }
+                                return null;
+                              }
+                            : null,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _updateEvent,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : Text(
+                          'Update Event',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
               ),
             ],
           ),
@@ -377,31 +396,59 @@ class _EditEventScreenState extends State<EditEventScreen> {
     );
   }
 
-  // Add this method to handle date selection
-  Future<void> _selectDate(BuildContext context, {required bool isStartDate}) async {
-    final DateTime initialDate = isStartDate ? startDate : endDate;
-    final DateTime firstDate = isStartDate ? DateTime.now() : startDate;
-    
+  Widget _buildImageUrlField() {
+    return TextFormField(
+      controller: _imageUrlController,
+      decoration: InputDecoration(
+        labelText: 'Event Banner URL',
+        hintText: 'Enter web-hosted image URL',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        prefixIcon: const Icon(Icons.image),
+      ),
+      style: GoogleFonts.poppins(),
+      validator: (value) {
+        if (value != null && value.isNotEmpty) {
+          try {
+            final uri = Uri.parse(value);
+            if (!uri.hasScheme || !uri.hasAuthority) {
+              return 'Please enter a valid URL';
+            }
+          } catch (e) {
+            return 'Please enter a valid URL';
+          }
+        }
+        return null;
+      },
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context,
+      {required bool isStartDate}) async {
+    final DateTime initialDate = isStartDate ? _startDate : _endDate;
+    final DateTime firstDate = isStartDate ? DateTime.now() : _startDate;
+
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: DateTime(2101),
     );
-    
+
     if (picked != null) {
       setState(() {
         if (isStartDate) {
-          startDate = picked;
+          _startDate = picked;
           _startDateController.text = DateFormat('yyyy-MM-dd').format(picked);
-          
+
           // If end date is before new start date, update end date too
-          if (endDate.isBefore(startDate)) {
-            endDate = startDate.add(const Duration(days: 1));
-            _endDateController.text = DateFormat('yyyy-MM-dd').format(endDate);
+          if (_endDate.isBefore(_startDate)) {
+            _endDate = _startDate.add(const Duration(days: 1));
+            _endDateController.text = DateFormat('yyyy-MM-dd').format(_endDate);
           }
         } else {
-          endDate = picked;
+          _endDate = picked;
           _endDateController.text = DateFormat('yyyy-MM-dd').format(picked);
         }
       });

@@ -1,4 +1,3 @@
-import 'package:event_management_app/screeen/payment_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -24,7 +23,8 @@ class MembershipScreen extends StatelessWidget {
       icon: Icons.wb_sunny_outlined,
       timeRange: '10am - 4pm',
       price: 460,
-      backgroundImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c',
+      backgroundImage:
+          'https://images.unsplash.com/photo-1497366216548-37526070297c',
       amenities: [
         '6 hours of access to the open coworking space',
         'Dedicated prayer corner',
@@ -38,7 +38,8 @@ class MembershipScreen extends StatelessWidget {
       icon: Icons.restaurant_menu,
       timeRange: '4pm - 10pm',
       price: 1000,
-      backgroundImage: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8',
+      backgroundImage:
+          'https://images.unsplash.com/photo-1559925393-8be0ec4767c8',
       amenities: [
         'Life-Sized Board Games',
         'Fun, conversational activities',
@@ -53,7 +54,8 @@ class MembershipScreen extends StatelessWidget {
       icon: Icons.calendar_today,
       timeRange: 'Unlimited access',
       price: 12000,
-      backgroundImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c',
+      backgroundImage:
+          'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c',
       amenities: [
         'Access to coworking space all month',
         'High-speed internet',
@@ -140,7 +142,8 @@ class MembershipCard extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: plan.backgroundImage,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                  placeholder: (context, url) =>
+                      Center(child: CircularProgressIndicator()),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
               ),
@@ -193,7 +196,7 @@ class MembershipCard extends StatelessWidget {
                     SizedBox(height: 16),
                     Container(
                       padding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(100),
@@ -241,7 +244,8 @@ class MembershipDetailScreen extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: plan.backgroundImage,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                placeholder: (context, url) =>
+                    Center(child: CircularProgressIndicator()),
                 errorWidget: (context, url, error) => Icon(Icons.error),
                 height: 250,
                 width: double.infinity,
@@ -276,11 +280,10 @@ class MembershipDetailScreen extends StatelessWidget {
                   Text('Amenities:',
                       style: TextStyle(color: Colors.white, fontSize: 20)),
                   ...plan.amenities.map((amenity) => Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text('• $amenity',
-                        style:
-                        TextStyle(color: Colors.grey, fontSize: 16)),
-                  )),
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text('• $amenity',
+                            style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      )),
                 ],
               ),
             ),
@@ -291,11 +294,12 @@ class MembershipDetailScreen extends StatelessWidget {
         padding: EdgeInsets.all(16),
         child: ElevatedButton(
           onPressed: () {
-            // Add your booking logic here.
-            Navigator.push(context, MaterialPageRoute(builder: (contex)=>MembershipPaymentScreen()));
+            // Show booking confirmation directly instead of navigating to payment screen
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Booking confirmed!'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
               ),
             );
           },

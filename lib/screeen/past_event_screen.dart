@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:clay_containers/clay_containers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/event.dart';
@@ -14,11 +13,11 @@ class PastEventScreen extends StatelessWidget {
         .orderBy('endDate', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => Event.fromMap(doc.id, doc.data()))
-              .where((event) => !event.isActive)
-              .toList();
-        });
+      return snapshot.docs
+          .map((doc) => Event.fromMap(doc.id, doc.data()))
+          .where((event) => !event.isActive)
+          .toList();
+    });
   }
 
   @override
@@ -49,7 +48,7 @@ class PastEventScreen extends StatelessWidget {
           }
 
           final events = snapshot.data ?? [];
-          
+
           if (events.isEmpty) {
             return Center(
               child: Text(
@@ -67,7 +66,10 @@ class PastEventScreen extends StatelessWidget {
             itemCount: events.length,
             itemBuilder: (context, index) {
               final event = events[index];
-              return _buildEventCard(context, event);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: _buildEventCard(context, event),
+              );
             },
           );
         },
@@ -76,10 +78,11 @@ class PastEventScreen extends StatelessWidget {
   }
 
   Widget _buildEventCard(BuildContext context, Event event) {
-    return ClayContainer(
-      depth: 30,
-      borderRadius: 20,
-      color: Colors.grey[200],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

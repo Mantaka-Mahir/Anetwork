@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../homescreen.dart';
 import 'admin_home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -36,7 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
@@ -49,8 +51,15 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       // Check user role and navigate accordingly
-      final role = userDoc.data()?['role'] as String? ?? 'user';
-      if (role == 'admin') {
+      final role = userDoc.data()?['UserType'] as String? ?? 'user';
+      final isAdmin = role == 'admin';
+
+      // Save authentication state to shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setBool('isAdmin', isAdmin);
+
+      if (isAdmin) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
@@ -156,7 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                           color: Colors.white70,
                         ),
                         onPressed: () {
@@ -186,7 +197,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 48, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
@@ -208,7 +220,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _continueAsGuest,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white70),
-                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 48, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

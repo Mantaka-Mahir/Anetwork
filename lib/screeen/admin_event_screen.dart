@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:clay_containers/clay_containers.dart';
 import 'manage_event_screen.dart';
 import 'add_event_screen.dart';
 
@@ -50,8 +49,7 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
                   context,
                   'Manage Event',
                   Icons.edit_calendar,
-                  Colors.blue,
-                      () => Navigator.push(
+                  () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ManageEventScreen(),
@@ -65,8 +63,7 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
                   context,
                   'Add Event',
                   Icons.add_circle_outline,
-                  Colors.green,
-                      () => Navigator.push(
+                  () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const AddEventScreen(),
@@ -82,47 +79,34 @@ class _AdminEventScreenState extends State<AdminEventScreen> {
   }
 
   Widget _buildSimpleCard(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Color color,
-      VoidCallback onTap,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
-      child: ClayContainer(
-        depth: 20,
-        borderRadius: 20,
-        color: Colors.white54,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white54,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        // Center the card's content both vertically and horizontally
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: Colors.black),
+              const SizedBox(width: 15),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
-          ),
-          // Center the card's content both vertically and horizontally
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 40, color: Colors.black),
-                const SizedBox(width: 15),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

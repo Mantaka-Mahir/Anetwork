@@ -33,7 +33,8 @@ class ProfileScreen extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const LoginScreen()),
                     (route) => false,
                   );
                 }
@@ -84,12 +85,14 @@ class ProfileScreen extends StatelessWidget {
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()),
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 48, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
@@ -119,7 +122,8 @@ class ProfileScreen extends StatelessWidget {
                       );
                     }
 
-                    final userData = snapshot.data?.data() as Map<String, dynamic>?;
+                    final userData =
+                        snapshot.data?.data() as Map<String, dynamic>?;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,12 +155,15 @@ class ProfileScreen extends StatelessWidget {
                             _buildInfoItem(
                               icon: Icons.person_outline,
                               title: 'Role',
-                              value: (userData?['role'] as String?)?.toUpperCase() ?? 'USER',
+                              value: (userData?['role'] as String?)
+                                      ?.toUpperCase() ??
+                                  'USER',
                             ),
                             _buildInfoItem(
                               icon: Icons.calendar_today,
                               title: 'Member Since',
-                              value: _formatDate(userData?['createdAt'] as Timestamp?),
+                              value: _formatDate(
+                                  userData?['createdAt'] as Timestamp?),
                             ),
                           ],
                         ),

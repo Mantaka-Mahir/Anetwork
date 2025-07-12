@@ -4,9 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clay_containers/clay_containers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
-import '../services/supabase_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
@@ -19,7 +17,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   bool isDarkMode = false;
   double opacityLevel = 0.0; // For fade-in animation
   final _auth = FirebaseAuth.instance;
-  final _supabaseService = SupabaseService();
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _imageUrlController = TextEditingController();
+  final _firestore = FirebaseFirestore.instance;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -48,68 +52,77 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       );
     }
   }
-  
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      try {
-        File file = File(image.path);
-        
-        // Validate file
-        if (!file.existsSync()) {
-          throw Exception('Image file does not exist');
-        }
-        
-        final fileSize = await file.length();
-        if (fileSize > 10 * 1024 * 1024) { // 10MB limit
-          throw Exception('Image file is too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 10MB.');
-        }
-        
-        // Use Supabase service
-        String? imageUrl = await _supabaseService.uploadFile(
-          file,
-          folder: 'admin_uploads',
-          bucket: 'admin_uploads',
+
+  Future<void> _updateProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('No user logged in');
+      }
+
+      // Get the image URL from the text field
+      String imageUrl = _imageUrlController.text.trim();
+      if (imageUrl.isEmpty) {
+        imageUrl = 'https://via.placeholder.com/400x400?text=Profile+Image';
+      }
+
+      // Update user profile in Firestore
+      await _firestore.collection('users').doc(user.uid).update({
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+        'imageUrl': imageUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
         );
-        
-        if (imageUrl != null) {
-          // Use the imageUrl as needed (e.g., save to Firestore)
-          print('Image uploaded successfully to Supabase: $imageUrl');
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Image uploaded successfully to Supabase!')),
-            );
-          }
-        } else {
-          throw Exception('Failed to upload image to Supabase');
-        }
-      } catch (e) {
-        print('Error uploading image: $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
+      }
+    } catch (e) {
+      print('Error updating profile: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating profile: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _imageUrlController.dispose();
+    super.dispose();
+  }
+
   /// Updated Navigation Card Builder with Hero and fade transition.
   Widget _buildAnimatedNavigationCard(
-      BuildContext context,
-      String title,
-      IconData icon,
-      Color color,
-      String backgroundImageUrl,
-      VoidCallback onTap,
-      int index,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    String backgroundImageUrl,
+    VoidCallback onTap,
+    int index,
+  ) {
     return AnimatedOpacity(
       opacity: opacityLevel,
       duration: Duration(milliseconds: 500 + index * 100),
@@ -133,11 +146,11 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     width: double.infinity,
                     placeholder: (context, url) => Container(
                       color: color.withOpacity(0.3),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: const Center(child: CircularProgressIndicator()),
                     ),
                     errorWidget: (context, url, error) => Container(
                       color: color.withOpacity(0.3),
-                      child: Icon(Icons.error, color: Colors.white),
+                      child: const Icon(Icons.error, color: Colors.white),
                     ),
                   ),
                 ),
@@ -168,7 +181,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           ),
                         ],
                       ),
-                      // You can add additional details (e.g., time range, price) here if needed.
+                      // You can add additional details here if needed.
                     ],
                   ),
                 ),
@@ -182,115 +195,270 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Vibrant red background for bold visual impact.
     return Scaffold(
-      backgroundColor: Colors.red,
+      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: isDarkMode ? Colors.grey[850] : Colors.white,
         elevation: 0,
-        title: Row(
+        title: Text(
+          'Admin Dashboard',
+          style: GoogleFonts.poppins(
+            color: isDarkMode ? Colors.white : Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.brightness_7 : Icons.brightness_4,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            onPressed: () {
+              setState(() {
+                isDarkMode = !isDarkMode;
+              });
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.logout,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            onPressed: _signOut,
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Image.asset('assets/logo.png', height: 25)),
-            const SizedBox(width: 16),
             Text(
-              'Attention Network',
+              'Welcome, Admin!',
               style: GoogleFonts.poppins(
-                color: Colors.white,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                childAspectRatio: 1.2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: [
+                  _buildAnimatedNavigationCard(
+                    context,
+                    'Event Management',
+                    Icons.event,
+                    Colors.blue,
+                    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminEventScreen(),
+                        ),
+                      );
+                    },
+                    0,
+                  ),
+                  _buildAnimatedNavigationCard(
+                    context,
+                    'User Profile',
+                    Icons.person,
+                    Colors.green,
+                    'https://images.unsplash.com/photo-1554224155-6726b3ff858f',
+                    () {
+                      // Show user profile modal
+                      _showProfileEditModal(context);
+                    },
+                    1,
+                  ),
+                  _buildAnimatedNavigationCard(
+                    context,
+                    'Analytics',
+                    Icons.analytics,
+                    Colors.purple,
+                    'https://images.unsplash.com/photo-1551288049-bebda4e38f71',
+                    () {
+                      // Navigate to analytics
+                    },
+                    2,
+                  ),
+                  _buildAnimatedNavigationCard(
+                    context,
+                    'Settings',
+                    Icons.settings,
+                    Colors.orange,
+                    'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f',
+                    () {
+                      // Navigate to settings
+                    },
+                    3,
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: _signOut,
-          ),
-          IconButton(
-            icon: const Icon(Icons.cloud_upload, color: Colors.white),
-            onPressed: _pickImage,
-          ),
-        ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Text(
-              'Admin Dashboard',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 40),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: GridView.count(
-                  crossAxisCount:
-                  MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                  children: [
-                    // Updated "Events" card with fade transition navigation.
-                    _buildAnimatedNavigationCard(
-                      context,
-                      'Events',
-                      Icons.event,
-                      Colors.blue,
-                      'https://tinyurl.com/4mdxuw5t',
-                          () {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            transitionDuration: const Duration(milliseconds: 500),
-                            pageBuilder: (_, __, ___) => const AdminEventScreen(),
-                            transitionsBuilder: (_, animation, __, child) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      0,
-                    ),
-                    _buildAnimatedNavigationCard(
-                      context,
-                      'Food',
-                      Icons.restaurant,
-                      Colors.orange,
-                      'https://tinyurl.com/5n75jpap',
-                          () {},
-                      1,
-                    ),
-                    _buildAnimatedNavigationCard(
-                      context,
-                      'Merch',
-                      Icons.shopping_bag,
-                      Colors.purple,
-                      'https://tinyurl.com/58yyanwt',
-                          () {},
-                      2,
-                    ),
-                    _buildAnimatedNavigationCard(
-                      context,
-                      'Membership',
-                      Icons.wallet_membership,
-                      Colors.green,
-                      'https://tinyurl.com/3xfwjjsc',
-                          () {},
-                      3,
-                    ),
-                  ],
+    );
+  }
+
+  void _showProfileEditModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.91,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: isDarkMode ? Colors.grey[850] : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Text(
+                'Edit Profile',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _imageUrlController,
+                          decoration: InputDecoration(
+                            labelText: 'Profile Image URL',
+                            hintText: 'Enter web-hosted image URL',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            prefixIcon: const Icon(Icons.image),
+                          ),
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              try {
+                                final uri = Uri.parse(value);
+                                if (!uri.hasScheme || !uri.hasAuthority) {
+                                  return 'Please enter a valid URL';
+                                }
+                              } catch (e) {
+                                return 'Please enter a valid URL';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Enter a web-hosted image URL. A placeholder will be used if none is provided.",
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Name',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your name';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            if (!value.contains('@')) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _phoneController,
+                          decoration: InputDecoration(
+                            labelText: 'Phone',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your phone number';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _updateProfile,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(
+                                    'Update Profile',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

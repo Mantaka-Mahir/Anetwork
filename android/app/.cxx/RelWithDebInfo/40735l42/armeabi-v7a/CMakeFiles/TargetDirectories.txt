@@ -1,0 +1,2 @@
+C:/Users/manta/Desktop/working prototype/13/attentionnetwork-final-backend/android/app/.cxx/RelWithDebInfo/40735l42/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/manta/Desktop/working prototype/13/attentionnetwork-final-backend/android/app/.cxx/RelWithDebInfo/40735l42/armeabi-v7a/CMakeFiles/rebuild_cache.dir
